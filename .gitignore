@@ -34,3 +34,6 @@ dqn/libtorch/
 # other
 Debug/LTE-Sim
 src/load-parameters.h 
+state_fifo
+sched_fifo
+cqi_fifo
