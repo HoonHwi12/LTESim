@@ -334,6 +334,7 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
     }// fixed scheduler
 
     // training time logging
+<<<<<<< HEAD
     //end = std::chrono::steady_clock::now();
     //duration = end - start;    
     
@@ -359,6 +360,27 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
       }
     }
     */
+=======
+    end = std::chrono::steady_clock::now();
+    duration = end - start;
+    
+    // checks the valid-TTI's explore/exploitation count
+    if (action[1].item<int>() == 0) valid_TTI_exploit++;
+    else if(action[1].item<int>() > 0) valid_TTI_explore++;
+
+    printf("\tInferenceTime %0.7f ms\tExploit %d,\tExplore %d\n", (float)(clock()-infstart)/CLOCKS_PER_SEC, valid_TTI_exploit, valid_TTI_explore);
+
+    //printf("\tExploit: %d,\tExplore: %d\t\n\n", valid_TTI_exploit, valid_TTI_explore);
+
+    //output to file 
+    if((int)networkEnv->TTIcounter % 100 == 0){
+      if(use_dqn){
+        output_file << networkEnv->TTIcounter << ", " << reward_copy << ", " << valid_TTI_explore << ", " << valid_TTI_exploit << ", "  << duration.count() << std::endl;
+      } else {
+        output_file << networkEnv->TTIcounter << ", " << reward_copy <<  ", "  << duration.count() << std::endl;
+      }
+    }
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
     
     // decide to break to testing
     if((networkEnv->TTIcounter > TRAIN_TTI )){
@@ -376,6 +398,7 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
+<<<<<<< HEAD
   //networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
   /*
   output_file0.close();
@@ -408,6 +431,15 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
     output_file2 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
     output_file3 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
 */
+=======
+  networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
+  output_file.close();
+
+  if(use_dqn){ // only testing loops for DQN
+    torch::save(policyNet, model_name);
+    log_file_name = base + "_testing.txt";
+    output_file.open(log_file_name);
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
     int training_ttis = networkEnv->TTIcounter;
 
     while(1){ // testing loop
@@ -415,6 +447,7 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
       networkEnv->TTI_increment();
 
     	// select action explore/exploit
+<<<<<<< HEAD
       torch::Tensor action = agent->exploit(state.to(device), policyNet0, policyNet1, policyNet2, policyNet3, true);
 
     	// execute action
@@ -423,6 +456,12 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
 
       SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
       
+=======
+      torch::Tensor action = agent->exploit(state.to(device), policyNet, true);
+
+    	// execute action
+      SendScheduler(&sh_fd, action[0].item<int>());
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
       // observe new state
       update     = FetchState(&st_fd); 
       cqi_update = FetchCQIs(&cqi_fd);
@@ -435,6 +474,7 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
       networkEnv->ProcessCQIs(cqi_update); // process cqis
       torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
       reward_copy = reward[0].item<float>();
+<<<<<<< HEAD
 
 /*
       output_file0 << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
@@ -455,13 +495,26 @@ printf("loss 0/1/2/3 %f %f %f %f\n", loss0.item().toFloat(),loss1.item().toFloat
     //networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
   } // only dqn should test loop
 
+=======
+      output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
+      if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
+    } // testing loop
+    output_file.close();
+    networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
+  } // only dqn should test loop
+
+
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   close(sh_fd);
   close(st_fd);
   close(cqi_fd);
   delete networkEnv;
+<<<<<<< HEAD
 
   printf("TEST END, Test Duration: %0.4f s\n", (float)(clock()-test_start) / CLOCKS_PER_SEC);
 
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   return 0;
 }
 
@@ -526,6 +579,7 @@ void OpenCQIFifo(int *fd){
 
 void OpenStateFifo(int *fd, int *noUEs){
   // create the state fifo
+<<<<<<< HEAD
   mkfifo(STATE_FIFO, S_IFIFO|0777);
   char noUEs_in[80];
   int input_bytes;
@@ -533,6 +587,13 @@ void OpenStateFifo(int *fd, int *noUEs){
   // block for LTESim to connect
   *fd = open(STATE_FIFO, O_RDONLY);
   
+=======
+  mkfifo(STATE_FIFO, S_IFIFO|0640);
+  char noUEs_in[80];
+  int input_bytes;
+  // block for LTESim to connect
+  *fd = open(STATE_FIFO, O_RDONLY);
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   // read the number of UEs
   input_bytes = read(*fd, noUEs_in, sizeof(noUEs_in));
   close(*fd);
@@ -575,15 +636,21 @@ void FetchInitUEs(int *fd, LTENetworkState *network_state){
   network_state->InitState(message);
 }
 
+<<<<<<< HEAD
 void SendScheduler(int *fd, int scheduler0, int scheduler1, int scheduler2, int scheduler3){
   std::string sched = std::to_string(scheduler0)+"|"+
                       std::to_string(scheduler1)+"|"+
                       std::to_string(scheduler2)+"|"+
                       std::to_string(scheduler3);
+=======
+void SendScheduler(int *fd, int scheduler){
+  std::string sched = std::to_string(scheduler);
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   char const *scheduler_send = sched.c_str();
   // send scheduler
   *fd = open(SCHED_FIFO, O_CREAT|O_WRONLY);
   write(*fd, scheduler_send, strlen(scheduler_send));
+<<<<<<< HEAD
 
   close(*fd);
 }
@@ -602,6 +669,20 @@ printf("opencqi fifo\n");
   OpenStateFifo(_st_fd, &_noUEs);
   printf("openstate fifo\n");
   
+=======
+  close(*fd);
+}
+
+LTENetworkState* initConnections(int* _sh_fd, int* _st_fd, int* _cqi_fd){
+	// connect to the scheduler pipe
+	ConnectSchedulerFifo(_sh_fd);
+	// open CQI fifo
+  OpenCQIFifo(_cqi_fd);
+
+  // open state fifo,connect and fetch #UEs
+  int _noUEs = 0;
+  OpenStateFifo(_st_fd, &_noUEs);
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   // initialise the network state environment
   LTENetworkState *networkEnv = new LTENetworkState(_noUEs, CQI_SIZE);
   // initialise UE and Application from LTE-sim

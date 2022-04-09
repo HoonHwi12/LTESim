@@ -28,6 +28,7 @@ class Agent{
 		}
 		~Agent();
 
+<<<<<<< HEAD
 		torch::Tensor explore(torch::Tensor state){
 			std::uniform_int_distribution<int> dist_actions(0, num_actions);
 			torch::Tensor explore_action = torch::zeros(5);
@@ -69,6 +70,32 @@ class Agent{
 			exploit_action.index_put_({3}, at::argmax(output3, 1));
 			exploit_action.index_put_({4}, 0);
 			
+=======
+		torch::Tensor explore(torch::Tensor state, R policy_net){
+			std::uniform_int_distribution<int> dist_actions(0, num_actions);
+	        mt.seed(rd());
+			torch::Tensor explore_action = torch::zeros(2);
+			explore_action.index_put_({0}, dist_actions(mt));
+			explore_action.index_put_({1}, 1);
+			printf("Explore!\n");
+			start, end = std::chrono::steady_clock::now(); // time of zero is explore
+			return explore_action;
+
+		}
+
+
+		torch::Tensor exploit(torch::Tensor state, R policy_net, bool timeLog){
+			torch::NoGradGuard no_grad;
+			start = std::chrono::steady_clock::now();
+			clock_t infstart = clock();
+			torch::Tensor output = policy_net->forward(state);
+			end = std::chrono::steady_clock::now();
+			torch::Tensor exploit_action = torch::zeros(2);
+			exploit_action.index_put_({0}, at::argmax(output));
+			exploit_action.index_put_({1}, 0);
+			//printf("Exploit!\n");
+
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 			if(timeLog) printf("InferenceTime %0.7f ms/ Exploit! \n", (float)(clock()-infstart)/CLOCKS_PER_SEC);
 			else printf("Exploit! \n");
 			return exploit_action;
@@ -76,7 +103,11 @@ class Agent{
 
 
 
+<<<<<<< HEAD
 		torch::Tensor selectAction(torch::Tensor state, R policy_net0, R policy_net1, R policy_net2, R policy_net3){
+=======
+		torch::Tensor selectAction(torch::Tensor state, R policy_net){
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 			float exploration_rate = strategy->explorationRate(current_step);
 			// printf("eps: %f\n", exploration_rate);
 			current_step++;
@@ -86,10 +117,16 @@ class Agent{
 			float random_rate = dist_rate(mt);
 			// printf("rdr: %f\n", random_rate)
 			if(exploration_rate > random_rate){ // explore
+<<<<<<< HEAD
 				return explore(state);
 			} else { 				
 				return explore(state);			// exploit
 				//return exploit(state, policy_net0, policy_net1, policy_net2, policy_net3, false);
+=======
+				return explore(state, policy_net);
+			} else { 							// exploit
+				return exploit(state, policy_net, false);
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 			}
 		}
 

@@ -38,9 +38,12 @@
 #include "../core/spectrum/bandwidth-manager.h"
 #include "../protocolStack/packet/packet-burst.h"
 
+<<<<<<< HEAD
 //HH
 #include "../protocolStack/mac/packet-scheduler/dqn-packet-scheduler.h"
 
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 ENodeB::ENodeB ()
 {}
 
@@ -308,6 +311,7 @@ ENodeB::SetDLScheduler (ENodeB::DLSchedulerType type)
   my_scheduler = type;
   switch (type)
     {
+<<<<<<< HEAD
       case ENodeB::DLScheduler_TYPE_DQN:
     	scheduler = new  DQN_PacketScheduler ();
     	scheduler->SetMacEntity (mac);
@@ -316,6 +320,8 @@ ENodeB::SetDLScheduler (ENodeB::DLSchedulerType type)
 	    break;
 
 
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
       case ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR:
     	scheduler = new  DL_PF_PacketScheduler ();
     	scheduler->SetMacEntity (mac);

@@ -8,7 +8,11 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
+<<<<<<< HEAD
 # Make data base, printed on Fri Mar 25 07:14:37 2022
+=======
+# Make data base, printed on Fri Mar 25 03:51:42 2022
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 # Variables
 
@@ -31,7 +35,11 @@ VSCODE_LOG_NATIVE = false
 # default
 MAKE_VERSION := 4.1
 # makefile
+<<<<<<< HEAD
 CURDIR := /home/hoonhwi/net/test_LTESim-dqn
+=======
+CURDIR := /home/hoonhwi/net/ori_LTESim-dqn
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 # makefile
 SHELL = /bin/sh
 # environment
@@ -71,9 +79,15 @@ LS_COLORS =
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
+<<<<<<< HEAD
 PWD = /home/hoonhwi/net/test_LTESim-dqn
 # environment
 VSCODE_IPC_HOOK_CLI = /run/user/1016/vscode-ipc-b538204e-b26e-434d-ad50-f89fca77427e.sock
+=======
+PWD = /home/hoonhwi/net/ori_LTESim-dqn
+# environment
+VSCODE_IPC_HOOK_CLI = /run/user/1016/vscode-ipc-1a8973f6-4b26-48a0-a88e-273d962296f0.sock
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
@@ -161,7 +175,11 @@ VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 
 # Directories
 
+<<<<<<< HEAD
 # . (device 2049, inode 108298424): 22 files, no impossibilities.
+=======
+# . (device 2049, inode 108314829): 22 files, no impossibilities.
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 # 22 files, no impossibilities in 1 directories.
 
@@ -181,7 +199,11 @@ all:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
+<<<<<<< HEAD
 #  Last modified 2022-03-15 09:13:01.640755583
+=======
+#  Last modified 2022-03-17 13:30:15.119498337
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 #  File has been updated.
 #  Successfully updated.
 
@@ -199,17 +221,29 @@ make:
 	if test -f LTE-Sim; then rm LTE-Sim; fi;
 	clear;
 	cat CONFIG/LTE-Sim
+<<<<<<< HEAD
 	cd TOOLS; make; cd ../;
 	./CONFIG/make_load-parameter-file.sh; 
 	cd Debug; make clean; make; cd ..;
 	ln -sf Debug/LTE-Sim LTE-Sim 
+=======
+	sleep 2
+	cd TOOLS; make; cd ../;
+	./CONFIG/make_load-parameter-file.sh; 
+	cd Debug; make clean; make; cd ..;
+	ln -s Debug/LTE-Sim LTE-Sim 
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	cat CONFIG/LTE-Sim-end
 
 clean:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
+<<<<<<< HEAD
 #  recipe to execute (from 'Makefile', line 12):
+=======
+#  recipe to execute (from 'Makefile', line 13):
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	rm LTE-Sim; cd Debug; make clean
 	cd ..
 	cd TOOLS; make clean;
@@ -232,6 +266,10 @@ clean:
 # strcache performance: lookups = 35 / hit rate = 17%
 # hash-table stats:
 # Load=29/8192=0%, Rehash=0, Collisions=1/35=3%
+<<<<<<< HEAD
 # Finished Make data base on Fri Mar 25 07:14:37 2022
+=======
+# Finished Make data base on Fri Mar 25 03:51:42 2022
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
  

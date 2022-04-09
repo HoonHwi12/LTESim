@@ -433,11 +433,14 @@ Application::Print (void)
 QoSParameters* Application::UpdateQoSOnSchedulerChange(ENodeB::DLSchedulerType new_scheduler_type){
   switch (new_scheduler_type)
     {
+<<<<<<< HEAD
       case ENodeB::DLScheduler_TYPE_DQN:
         SetQoSParameters(qosBase);
         // printf("LTESIM: QoS for Application ID# %d changed to qosBase.\n", GetApplicationID () );
       break;
 
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
       case ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR:
         SetQoSParameters(qosBase);
         // printf("LTESIM: QoS for Application ID# %d changed to qosBase.\n", GetApplicationID () );
@@ -471,7 +474,10 @@ QoSParameters* Application::UpdateQoSOnSchedulerChange(ENodeB::DLSchedulerType n
 }
 
 void Application::SetQoSAllTypes(QoSParameters *EXP, QoSParameters *FLS, QoSParameters *MLWDF, QoSParameters *Base){
+<<<<<<< HEAD
   //qosDQN   = DQN;
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   qosEXP   = EXP;
   qosFLS   = FLS;
   qosMLWDF = MLWDF;

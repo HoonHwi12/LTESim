@@ -488,6 +488,9 @@ DownlinkPacketScheduler::UpdateAverageTransmissionRate (void)
     {
       RadioBearer *bearer = (*it);
       bearer->UpdateAverageTransmissionRate ();
+<<<<<<< HEAD
 
+=======
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
     }
 }

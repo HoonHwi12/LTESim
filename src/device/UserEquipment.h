@@ -19,6 +19,11 @@
  * Author: Giuseppe Piro <g.piro@poliba.it>
  */
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 #ifndef USEREQUIPMENT_H_
 #define USEREQUIPMENT_H_
 
