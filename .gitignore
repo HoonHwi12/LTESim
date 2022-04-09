@@ -28,8 +28,8 @@
 *.app
 
 # build files
-dqn/build
-dqn/libtorch
+dqn/build/
+dqn/libtorch/
 
 # other
 Debug/LTE-Sim
