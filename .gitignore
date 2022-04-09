@@ -1,0 +1,42 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.pt
+*.zip
+*.7z
+
+# build files
+dqn/build/
+dqn/libtorch/
+
+# other
+Debug/LTE-Sim
+src/load-parameters.h 
+state_fifo
+sched_fifo
+cqi_fifo
