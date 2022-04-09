@@ -482,7 +482,7 @@ class LTENetworkState{
 			               delayReward = 1;
 			            } else {
 			               //delayReward = 0;
-						   delayReward = 1 - ((*(*itt)).realdelay - (*(*itt)).QoSdelay)/(*(*itt)).realplr;
+						   delayReward = 1 - ((*(*itt)).realdelay - (*(*itt)).QoSdelay)/(*(*itt)).realdelay;
 						   if(delayReward<0) delayReward=0;
 			            }
 			        // there hasnt been an RX
