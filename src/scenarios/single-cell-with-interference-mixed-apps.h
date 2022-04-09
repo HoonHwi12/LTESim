@@ -190,8 +190,8 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
 	//Define Application Container
   	int nbCell=1;
   	TraceBased VideoApplication[nbVideo];
-	InfiniteBuffer BEApplication[nbBE*nbCell*nbUE];
-	VoIP VoIPApplication[nbVoIP*nbCell*nbUE];
+	InfiniteBuffer BEApplication[nbBE];
+	VoIP VoIPApplication[nbVoIP];
   	CBR CBRApplication[nbCBR];
   	int voipApplication = 0;
   	int videoApplication = 0;
@@ -381,7 +381,7 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
 	}
 
 	
-	for (int i = 0; i < nbVideo; i++)
+	for (int i = 0; i < nbBE; i++)
 	{
   		//ue's random position
   		double posX = (double)rand()/RAND_MAX; posX = 0.95 *

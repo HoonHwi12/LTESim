@@ -245,7 +245,8 @@ class LTENetworkState{
 				for (std::vector<Application*>::iterator itt = this_UE->GetApplicationContainer()->begin(); itt != this_UE->GetApplicationContainer()->end(); ++itt){
 					this_app = (*itt);
 					// indicator = requirement - measured
-					gbr_indicator = this_app->QoSgbr - this_app->realgbr;
+					//gbr_indicator = this_app->QoSgbr - this_app->realgbr;
+					gbr_indicator = this_app->realgbr - this_app->QoSgbr;
 					state.index_put_({0,index}, gbr_indicator);
 					index++;
 					delay_indicator = this_app->QoSdelay - this_app->realdelay;
