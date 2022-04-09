@@ -1,0 +1,12 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/hoonhwi/net/test_LTESim-dqn'
+if test -f LTE-Sim; then rm LTE-Sim; fi;
+clear;
+cat CONFIG/LTE-Sim
+cd TOOLS; make; cd ../;
+./CONFIG/make_load-parameter-file.sh; 
+cd Debug; make clean; make; cd ..;
+ln -sf Debug/LTE-Sim LTE-Sim 
+cat CONFIG/LTE-Sim-end
+make: Leaving directory '/home/hoonhwi/net/test_LTESim-dqn'
+ 
