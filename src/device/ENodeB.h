@@ -69,11 +69,8 @@ public:
 
 	enum DLSchedulerType
 	  {
-<<<<<<< HEAD
 		DLScheduler_TYPE_DQN,
 
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	    DLScheduler_TYPE_MAXIMUM_THROUGHPUT,
 	    DLScheduler_TYPE_PROPORTIONAL_FAIR,
 	    DLScheduler_TYPE_FLS,

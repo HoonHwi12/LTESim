@@ -38,11 +38,8 @@
 #include "../../protocolStack/mac/packet-scheduler/enhanced-uplink-packet-scheduler.h"
 #include "../../protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.h"
 
-<<<<<<< HEAD
 #include "../../protocolStack/mac/packet-scheduler/dqn-packet-scheduler.h"
 
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 #include <math.h>
 #include <fstream>
 #include <list>
@@ -68,11 +65,8 @@ Simulator* Simulator::ptr=NULL;
 #define SCHED_FIFO "sched_fifo"
 #define CQI_FIFO   "cqi_fifo"
 
-<<<<<<< HEAD
 double d_dqn_output0, d_dqn_output1, d_dqn_output2, d_dqn_output3; 
 
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 Simulator::Simulator ()
 {
   m_stop = false;
@@ -154,7 +148,6 @@ bool Simulator::makeUEsStationary(){
 
 }
 
-<<<<<<< HEAD
 //int dqn_output0, dqn_output1, dqn_output2, dqn_output3 = 0;
 ENodeB::DLSchedulerType Simulator::FetchScheduler(int *fd){
   char c_readbuf[80];
@@ -232,59 +225,6 @@ ENodeB::DLSchedulerType Simulator::FetchScheduler(int *fd){
       }
   }
 
-=======
-ENodeB::DLSchedulerType Simulator::FetchScheduler(int *fd){
-  char readbuf[80];
-  int input_bytes;
-  ENodeB::DLSchedulerType downlink_scheduler_type;
-  *fd = open(SCHED_FIFO, O_RDONLY);
-  input_bytes = read(*fd, readbuf, sizeof(readbuf));
-  close(*fd);
-  int type = atoi(readbuf);
-  readbuf[input_bytes] = '\0';
-  printf("LTESIM: Received scheduler: \"%s\" and length is %d\n", readbuf, (int)strlen(readbuf));
-  int to_end = strcmp(readbuf, "end");
-  if (to_end == 0) {
-    m_stop = true;
-    downlink_scheduler_type = ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR;
-    return downlink_scheduler_type;
-  }
-  switch (type)
-    {
-      case 0:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR;
-        printf("LTESIM: Scheduler is PF_Fair.\n");
-        break;
-      case 1:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_MLWDF;
-        printf("LTESIM: Scheduler is MLWDF.\n");
-        break;
-      case 2:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_EXP;
-        printf("LTESIM: Scheduler is EXP.\n");
-        break;
-      case 3:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_FLS;
-        printf("LTESIM: Scheduler is FLS.\n");
-        break;
-      case 4:
-        downlink_scheduler_type = ENodeB::DLScheduler_EXP_RULE;
-        printf("LTESIM: Scheduler is EXP_RULE.\n");
-        break;
-      case 5:
-        downlink_scheduler_type = ENodeB::DLScheduler_LOG_RULE;
-        printf("LTESIM: Scheduler is LOG_RULE.\n");
-        break;
-      case 11:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR;
-        printf("LTESIM: SETTING UEs stationary.\n");
-        makeUEsStationary();
-        break;
-      default:
-        downlink_scheduler_type = ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR;
-        break;
-    }
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
     return downlink_scheduler_type;
 }
 
@@ -320,13 +260,7 @@ void  Simulator::SendCQISummary(int *fd){
   printf("LTESIM: Size of cqis: %d \n", (int)size);
   *fd = open(CQI_FIFO, O_CREAT|O_WRONLY);
   // send the cqi size
-<<<<<<< HEAD
   write(*fd, &size, sizeof(size));
-=======
-  
-  write(*fd, &size, sizeof(size));
-  
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   // then the whole message
   write(*fd, CQIs.c_str(), CQIs.size());
   // printf("LTESIM: Sent cqis.\n%s\n", CQIs.c_str());
@@ -382,18 +316,10 @@ void Simulator::FormUESummaryMessage(ENodeB *eNB, std::string *target_string){
         appGBR = appQoS->GetGBR();
         appDelay = appQoS->GetMaxDelay();
         appPLR = appQoS->GetDropProbability();
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
         // QoS to strings
         NumberToString(appGBR, &appGBR_str);
         NumberToString(appDelay, &appDelay_str);
         NumberToString(appPLR, &appPLR_str);
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
         // add to the message string
         // {UE id} {APP id} {APP GBR} {APP delay} {APP PLR}
         *target_string += UEid_str + " " + appID_str + " " + appGBR_str + " " + appDelay_str + " " + appPLR_str + "\n";
@@ -453,7 +379,6 @@ void Simulator::FormCQIMessage(ENodeB *eNB, std::string *target_string){
 void 
 Simulator::Run ()
 {
-<<<<<<< HEAD
     //HH
   //remove(SCHED_FIFO);
   //printf("SCHED_FIFO removed\n");
@@ -461,8 +386,6 @@ Simulator::Run ()
   //printf("STATE_FIFO removed\n");
 
   
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   // scheduler type object
   ENodeB::DLSchedulerType scheduler;
   // Open, connect to pipes
@@ -474,10 +397,6 @@ Simulator::Run ()
   ConnectStateFifo(&st_fd);
   // form information about each eNB's UE's application QoS and send!
   SendUESummary(&st_fd);
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   // tti trackers
   unsigned long tti_tr1, tti_tr2;
   // buffer contains the simulation output for the last TTI
@@ -517,10 +436,6 @@ Simulator::Run ()
   while (!m_calendar->IsEmpty () && !m_stop){
     // fetch the new scheduler
     scheduler = FetchScheduler(&sh_fd);
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
     // Update everything needed for scheduler changes
     UpdateAllScheduler(scheduler);
     // execute "action"

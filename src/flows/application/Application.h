@@ -127,10 +127,7 @@ private:
 
 	int m_applicationID;
 	// store each kind for swapping into m_qosParameters on scheduler change!
-<<<<<<< HEAD
 	//QoSParameters *qosDQN;
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	QoSParameters *qosEXP;
 	QoSParameters *qosFLS;
 	QoSParameters *qosMLWDF;

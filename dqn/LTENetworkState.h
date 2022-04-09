@@ -11,11 +11,6 @@
 
 typedef std::pair<int, int> id_size_pair;
 
-<<<<<<< HEAD
-//int i_replay;
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 enum ApplicationType
 {
 	APPLICATION_TYPE_VOIP,
@@ -76,10 +71,6 @@ struct UESummary
 	float ave_gbr;
 	float ave_delay;
 	float ave_plr;
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	float TXCount;
 	float RXCount;
 	float SatDelayCount;
@@ -253,21 +244,10 @@ class LTENetworkState{
 				// app QoS
 				for (std::vector<Application*>::iterator itt = this_UE->GetApplicationContainer()->begin(); itt != this_UE->GetApplicationContainer()->end(); ++itt){
 					this_app = (*itt);
-<<<<<<< HEAD
-					
-					//indicator = requirement - measured
-
-					 gbr_indicator = 0;//sthis_app->realgbr - this_app->QoSgbr;
-					 // gbr_indicator = this_app->QoSgbr - this_app->realgbr;
-					 state.index_put_({0,index}, gbr_indicator);
-					 index++;
-					
-=======
 					// indicator = requirement - measured
-					gbr_indicator = this_app->QoSgbr - this_app->realgbr;
+					gbr_indicator = this_app->realgbr - this_app->QoSgbr;
 					state.index_put_({0,index}, gbr_indicator);
 					index++;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 					delay_indicator = this_app->QoSdelay - this_app->realdelay;
 					state.index_put_({0,index}, delay_indicator);
 					index++;
@@ -275,18 +255,12 @@ class LTENetworkState{
 					state.index_put_({0,index}, plr_indicator);
 					index++;
 
-<<<<<<< HEAD
 					//printf("gbr/delay/plr indicator: %f %f %f\n", gbr_indicator, delay_indicator, plr_indicator);
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
 					delay_sum += this_app->realdelay;
 
-=======
-					gbr_sum += this_app->realgbr;
-					plr_sum += this_app->realplr;
-					delay_sum += this_app->realdelay;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 					sum_counter++;
 				}
 				// UE CQIs
@@ -297,11 +271,7 @@ class LTENetworkState{
 				}
 			}
 
-<<<<<<< HEAD
 			if(print_qos) printf("TTI:%f/ AVgbr/AVdelay/AVplr:%f %f %f\n", TTIcounter, gbr_sum/sum_counter,delay_sum/sum_counter, plr_sum/sum_counter);
-=======
-			if(print_qos) printf("TTI:%f/ AVgbr/AVdelay/AVplr %f %f %f\n", TTIcounter, gbr_sum/sum_counter,delay_sum/sum_counter, plr_sum/sum_counter);
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 			return state;
 
@@ -418,18 +388,12 @@ class LTENetworkState{
 					}
 					this_app->appMessageSizes += size_num_field;
 					this_app->realgbr = (8*message_sizes_in_buffer) / (TTIbuffer->size());
-<<<<<<< HEAD
 					//printf("realgbr(%f)/appMessageSizes(%f)/message_sizes_in_buffer(%d)/TTIbuffer->size(%d)\n",
 					//	this_app->realgbr,this_app->appMessageSizes, message_sizes_in_buffer, (TTIbuffer->size()));
 
 					//GBR satisfied
 					if (this_app->realgbr > this_app->QoSgbr) { //HH
 					//	printf("realgbr > qosgbr(%f)\n", this_app->QoSgbr);
-=======
-
-					//GBR satisfied
-					if (this_app->realgbr > this_app->QoSgbr) {
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 						this_app->appSatGBRCount ++;
 						this_UE->SatGBRCount++;
 					}
@@ -481,15 +445,9 @@ class LTENetworkState{
          	float delayReward = 0;
          	float sum_reward = 0;
 
-<<<<<<< HEAD
-         	float gbr_coef = 0;//0.2;//0.3;
-         	float plr_coef = 1;//0.5;
-         	float dly_coef = 0;//0.2;
-=======
          	float gbr_coef = 0.3;
          	float plr_coef = 0.3;
          	float dly_coef = 0.3;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 			int num_counter=0;
 			float sumgbr=0;
@@ -501,12 +459,7 @@ class LTENetworkState{
 	         	for (std::vector<Application*>::iterator itt = (*it)->GetApplicationContainer()->begin(); itt != (*it)->GetApplicationContainer()->end(); ++itt){
 
 					if ((*(*itt)).realgbr >= (*(*itt)).QoSgbr) {
-<<<<<<< HEAD
 		               gbrReward = 1;
-=======
-		               //gbrReward = 1;
-					   gbrReward = 1;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 		            }
 		            else {
 		               //gbrReward = 0;
@@ -526,22 +479,13 @@ class LTENetworkState{
 		            } else {
 		            	plrReward = 0;
 		            }
-<<<<<<< HEAD
-
-=======
- 					
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
  					//if there has been a RX
 					if((*(*itt)).appRXCount > 0){
 			            if ((*(*itt)).realdelay <= (*(*itt)).QoSdelay) {
 			               delayReward = 1;
 			            } else {
 			               //delayReward = 0;
-<<<<<<< HEAD
 						   delayReward = 1 - ((*(*itt)).realdelay - (*(*itt)).QoSdelay)/(*(*itt)).realdelay;
-=======
-						   delayReward = 1 - ((*(*itt)).realdelay - (*(*itt)).QoSdelay)/(*(*itt)).realplr;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 						   if(delayReward<0) delayReward=0;
 			            }
 			        // there hasnt been an RX
@@ -561,12 +505,8 @@ class LTENetworkState{
 			sum_reward = sum_reward / (float) noUEs ;
 			Accum_Reward += sum_reward;
 			printf("\tAt %d TTI, TTI Reward= %f, \tAccum_reward= %f, #UEs %d\n", (int)TTIcounter, sum_reward, Accum_Reward, noUEs);
-<<<<<<< HEAD
-			printf("AVgbr/AVdelay/AVplr %f %f %f\n", sumgbr/num_counter,sumdelay/num_counter, sumplr/num_counter);
+			//printf("AVgbr/AVdelay/AVplr %f %f %f\n", sumgbr/num_counter,sumdelay/num_counter, sumplr/num_counter);
 		
-=======
-			
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 			RealReward.index_put_({0}, sum_reward);
 	      	return RealReward;  
       	}  
@@ -639,25 +579,16 @@ class LTENetworkState{
 			}
   			
   			std::ofstream output_file(file_name);
-<<<<<<< HEAD
 			output_file << "App_id, SatPLRCount, SatDelayCount, SatGBRCount" << std::endl;
 
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 			for (std::vector<UESummary*>::iterator it = UESummaries->begin(); it != UESummaries->end(); ++it){
 				UESummary* this_UE = *it;
 				std::vector<Application*> *appcontainer = this_UE->GetApplicationContainer();
 				for(std::vector<Application*>::iterator itt = appcontainer->begin(); itt != appcontainer->end(); ++itt){
 					Application* this_app = *itt;
-<<<<<<< HEAD
 					output_file << this_app->id << ", " << this_app->appSatPLRCount
 									<< ", " << this_app->appSatDelayCount
 										<< ", " << this_app->appSatGBRCount << std::endl;
-=======
-					output_file << this_app->id << ", " << this_app->appSatPLRCount << std::endl;
-					output_file << this_app->id << ", " << this_app->appSatDelayCount << std::endl;
-					output_file << this_app->id << ", " << this_app->appSatGBRCount << std::endl;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 				}
 			} 
 			output_file.close();

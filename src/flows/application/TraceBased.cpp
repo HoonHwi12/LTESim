@@ -76,10 +76,6 @@ TraceBased::LoadTrace (std::string traceFile)
 
   uint32_t time, index, prevTime = 0;
   uint16_t size;
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   char frameType;
   TraceEntry entry;
   std::ifstream ifTraceFile;

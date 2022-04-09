@@ -52,12 +52,8 @@ src/device/ENodeB.d: ../src/device/ENodeB.cpp ../src/device/NetworkNode.h \
  ../src/device/../phy/enb-lte-phy.h ../src/device/../phy/lte-phy.h \
  ../src/device/../core/spectrum/bandwidth-manager.h \
  ../src/device/../protocolStack/packet/packet-burst.h \
-<<<<<<< HEAD
  ../src/device/../protocolStack/packet/Packet.h \
  ../src/device/../protocolStack/mac/packet-scheduler/dqn-packet-scheduler.h
-=======
- ../src/device/../protocolStack/packet/Packet.h
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 ../src/device/NetworkNode.h:
 
@@ -172,8 +168,5 @@ src/device/ENodeB.d: ../src/device/ENodeB.cpp ../src/device/NetworkNode.h \
 ../src/device/../protocolStack/packet/packet-burst.h:
 
 ../src/device/../protocolStack/packet/Packet.h:
-<<<<<<< HEAD
 
 ../src/device/../protocolStack/mac/packet-scheduler/dqn-packet-scheduler.h:
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9

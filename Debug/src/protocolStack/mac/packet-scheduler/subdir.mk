@@ -17,12 +17,8 @@ CPP_SRCS += \
 ../src/protocolStack/mac/packet-scheduler/mw-rule-downlink-packet-scheduler.cpp \
 ../src/protocolStack/mac/packet-scheduler/packet-scheduler.cpp \
 ../src/protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.cpp \
-<<<<<<< HEAD
 ../src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.cpp \
 ../src/protocolStack/mac/packet-scheduler/dqn-packet-scheduler.cpp 
-=======
-../src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.cpp 
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 OBJS += \
 ./src/protocolStack/mac/packet-scheduler/delay-edd-rule-downlink-packet-scheduler.o \
@@ -38,12 +34,8 @@ OBJS += \
 ./src/protocolStack/mac/packet-scheduler/mw-rule-downlink-packet-scheduler.o \
 ./src/protocolStack/mac/packet-scheduler/packet-scheduler.o \
 ./src/protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.o \
-<<<<<<< HEAD
 ./src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.o \
 ./src/protocolStack/mac/packet-scheduler/dqn-packet-scheduler.o 
-=======
-./src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.o 
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 CPP_DEPS += \
 ./src/protocolStack/mac/packet-scheduler/delay-edd-rule-downlink-packet-scheduler.d \
@@ -59,12 +51,8 @@ CPP_DEPS += \
 ./src/protocolStack/mac/packet-scheduler/mw-rule-downlink-packet-scheduler.d \
 ./src/protocolStack/mac/packet-scheduler/packet-scheduler.d \
 ./src/protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.d \
-<<<<<<< HEAD
 ./src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.d \
 ./src/protocolStack/mac/packet-scheduler/dqn-packet-scheduler.d 
-=======
-./src/protocolStack/mac/packet-scheduler/uplink-packet-scheduler.d 
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 
 # Each subdirectory must supply rules for building sources it contributes

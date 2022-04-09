@@ -60,13 +60,8 @@ static void SingleCellWithInterference (int nbCells, double radius,
 {
 
   // define simulation times
-<<<<<<< HEAD
   double duration = 100;
   double flow_duration = 100;
-=======
-  double duration = 1000;
-  double flow_duration = 1000;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 
   int cluster = 4;
@@ -90,12 +85,8 @@ static void SingleCellWithInterference (int nbCells, double radius,
 	}
   else
 	{
-<<<<<<< HEAD
 	  //srand (time(NULL));
 	  srand (0);
-=======
-	  srand (time(NULL));
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	}
   std::cout << "Simulation with SEED = " << seed << std::endl;
 
@@ -127,21 +118,15 @@ static void SingleCellWithInterference (int nbCells, double radius,
   	    downlink_scheduler_type = ENodeB::DLScheduler_LOG_RULE;
   	    std::cout << "Scheduler LOG RULE "<< std::endl;
 	    break;
-<<<<<<< HEAD
       case 7:
   	    downlink_scheduler_type = ENodeB::DLScheduler_TYPE_DQN;
   	    std::cout << "Scheduler DQN "<< std::endl;
 	    break;
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	  default:
 		downlink_scheduler_type = ENodeB::DLScheduler_TYPE_PROPORTIONAL_FAIR;
 		break;
 	}
-<<<<<<< HEAD
 	
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
   // SET FRAME STRUCTURE
   FrameManager::FrameStructure frame_structure;
@@ -159,12 +144,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 	}
   frameManager->SetFrameStructure(FrameManager::FRAME_STRUCTURE_FDD);
 
-<<<<<<< HEAD
-=======
-
-
-
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   //create cells
   std::vector <Cell*> *cells = new std::vector <Cell*>;
   for (int i = 0; i < nbCells; i++)
@@ -254,11 +233,7 @@ static void SingleCellWithInterference (int nbCells, double radius,
   float plrVideoBuff = 10e-6;
 
   //int gbrVideoLive = 180;    // 180kbps
-<<<<<<< HEAD
   int gbrVideoLive = 128;    // 242kbps
-=======
-  int gbrVideoLive = 242;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   float delayVideoLive = 0.15;// 150ms
   float plrVideoLive = 10e-3;
 
@@ -287,11 +262,7 @@ static void SingleCellWithInterference (int nbCells, double radius,
 			                                 0, //handover false!
 			                                 Mobility::RANDOM_DIRECTION);
 
-<<<<<<< HEAD
 	  std::cout << "Created UE - id " << idUE << " position " << posX << " " << posY << " direction " << speedDirection << " cell " << cells->at(0)->GetIdCell() << std::endl;
-=======
-	  std::cout << "Created UE - id " << idUE << " position " << posX << " " << posY << " direction " << speedDirection << std::endl;
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 	  ue->GetMobilityModel()->GetAbsolutePosition()->Print();
 	  ue->GetPhy ()->SetDlChannel (eNBs->at (0)->GetPhy ()->GetDlChannel ());
@@ -406,11 +377,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 
 
 	  // *** LIVE video application
-<<<<<<< HEAD
-	  if(idUE%2==0)
-	  {
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	  for (int j = 0; j < nbVideo; j++)
 		{
 		  // create application
@@ -420,13 +386,8 @@ static void SingleCellWithInterference (int nbCells, double radius,
 		  VideoApplication[videoApplication].SetStartTime(start_time);
 		  VideoApplication[videoApplication].SetStopTime(duration_time);
 
-<<<<<<< HEAD
 		  string video_trace ("foreman_H264_");
 		  //string video_trace ("highway_H264_");
-=======
-		  //string video_trace ("foreman_H264_");
-		  string video_trace ("highway_H264_");
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 		  //string video_trace ("mobile_H264_");
 
 		  switch (videoBitRate)
@@ -553,10 +514,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 		  applicationID++;
 		  videoApplication++;
 		}
-<<<<<<< HEAD
-	  } // ueID%2==0
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 	  // *** be application
 	  for (int j = 0; j < nbBE; j++)
@@ -642,11 +599,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 		  beApplication++;
 		}
 
-<<<<<<< HEAD
-	  if(idUE%2==1)
-	  {
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 	  // *** cbr application
 	  for (int j = 0; j < nbCBR; j++)
 		{
@@ -747,10 +699,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 		  applicationID++;
 		  cbrApplication++;
 		}
-<<<<<<< HEAD
-	  }
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
 
 	  idUE++;
 
@@ -758,10 +706,6 @@ static void SingleCellWithInterference (int nbCells, double radius,
 
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> ad05299149aa732f4d064f67e737dda4046b36a9
   simulator->SetStop(duration);
   // main loop.
   simulator->Run ();
