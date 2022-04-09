@@ -26,6 +26,9 @@
 *.exe
 *.out
 *.app
+*.zip
+*.7z
+*.pt
 
 # build files
 dqn/build/
