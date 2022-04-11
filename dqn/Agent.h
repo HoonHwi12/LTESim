@@ -61,6 +61,7 @@ class Agent{
 			torch::Tensor exploit_action = torch::zeros({2, 4});
 			uint32_t arg_action = at::argmax(output, 1).item<int>();
 			h_log("debug402\n");
+			if(timeLog) printf("InferenceTime %0.7f ms/ Exploit! \n", (float)(clock()-infstart)/CLOCKS_PER_SEC);
 
 			exploit_action.index_put_({0, 0}, (int)(arg_action/1000));
 			exploit_action.index_put_({0, 1}, (int)((arg_action%1000)/100));
@@ -69,9 +70,8 @@ class Agent{
 			exploit_action.index_put_({1}, 0);
 
 			printf("exploit action %d %d %d %d\n", exploit_action[0][0].item<int>(), exploit_action[0][1].item<int>(), exploit_action[0][2].item<int>(), exploit_action[0][3].item<int>());
-			
-			if(timeLog) printf("InferenceTime %0.7f ms/ Exploit! \n", (float)(clock()-infstart)/CLOCKS_PER_SEC);
-			else printf("Exploit! \n");
+		
+			if(!timeLog) printf("Exploit! \n");
 			return exploit_action;
 		}
 

@@ -267,7 +267,7 @@ class LTENetworkState{
 					index++;
 
 					// HH
-					packet_indicator = -this_app->noRX - this_app->noTX; // -1~0
+					packet_indicator = -this_app->noRX - this_app->noTX; // -2~0
 					state.index_put_({0,index}, packet_indicator);
 					index++;
 					// tx_indicator = -this_app->noTX; // -1~0

@@ -92,6 +92,9 @@ int main(int argc, char** argv) {
 	} else {
     scheduler_string = "dqn";
   }
+
+  std::cout << "PYTORCH version " << TORCH_VERSION << std::endl;
+  
 	// Decide CPU or GPU
 	torch::Device device = torch::kCPU;
 	std::cout << "CUDA DEVICE COUNT: " << torch::cuda::device_count() << std::endl;

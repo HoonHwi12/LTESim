@@ -90,6 +90,8 @@ DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectr
   double weight2 = d_dqn_output2 / 100; 
   double weight3 = d_dqn_output3 / 100;
 
+  printf("debug/ weight: %f %f %f %f\n", weight0,weight1,weight2,weight3);
+
   //double avg_weight = (weight0+weight1+weight2+weight3) / 4;
 
   //printf("Compute DQN metric weight0(%f)/weight1(%f)/weight2(%f)\n",
@@ -128,9 +130,9 @@ DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectr
               * pow(ComputeLOG(bearer), weight1) // LOG
               * pow(ComputeMLWDF(bearer), weight2) // MLWDF
               * pow(ComputeEXPrule(bearer), weight3); //EXP rule
+    }
 
     return metric;
-  }
 }
 
 double DQN_PacketScheduler::ComputeEXPrule(RadioBearer *bearer)
