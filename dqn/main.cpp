@@ -51,7 +51,7 @@ const int NET_UPDATE        = 10;     // how many episodes until we update the t
 const int MEM_SIZE          = 50000; // replay memory size
 //const float LR              = 0.01;  // learning rate
 const float LR_START        = 0.01;
-const float LR_END          = 0.000001;
+const float LR_END          = 0.00001;
 const float LR_DECAY        = 0.0001;
 const float MOMENTUM        = 0.05;  // SGD MOMENTUM
  // environment concerns
@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
   }
 
   std::cout << "PYTORCH version " << TORCH_VERSION << std::endl;
-  
+
 	// Decide CPU or GPU
 	torch::Device device = torch::kCPU;
 	std::cout << "CUDA DEVICE COUNT: " << torch::cuda::device_count() << std::endl;
