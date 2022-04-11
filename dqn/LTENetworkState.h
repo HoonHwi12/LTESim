@@ -46,6 +46,8 @@ struct Application
 	float realdelay;
 	float realplr;
 	float reward;
+	int noRX;
+	int noTX;
 	Application(int id_ ,float gbr, float delay, float plr){
 		id = id_;
 		QoSgbr           = gbr;
@@ -192,7 +194,8 @@ class LTENetworkState{
 			}
 			// form the state size
 			// 1(#ues) + Each UE's(App QoS + cqi)
-		    state_size = 1+noUEs*(3*noAPPs + cqi_size);
+		    //state_size = 1+noUEs*(3*noAPPs + cqi_size) + packet;
+			state_size = 1+noUEs*(3*noAPPs + cqi_size) ; //HH
 		    reset_state = torch::ones({1, state_size});
 		}
 
@@ -228,7 +231,8 @@ class LTENetworkState{
 			
 			UESummary* this_UE;
 			Application* this_app;
-			float gbr_indicator, plr_indicator, delay_indicator;
+			float gbr_indicator, plr_indicator, delay_indicator, reward_indicator;
+			int packet_indicator;
 			std::vector<int> *this_UE_cqis;
 			state = torch::ones({1, state_size});
 			using namespace torch::indexing;
@@ -251,18 +255,26 @@ class LTENetworkState{
 					//indicator = requirement - measured
 
 					 // gbr_indicator = 0;//sthis_app->realgbr - this_app->QoSgbr;
-					gbr_indicator = this_app->realgbr - this_app->QoSgbr;
+					gbr_indicator = this_app->realgbr - this_app->QoSgbr; // realgbr-qosgbr ~ -qosgbr
 					state.index_put_({0,index}, gbr_indicator);
 					index++;
-					
-					delay_indicator = this_app->QoSdelay - this_app->realdelay;
+					delay_indicator = this_app->QoSdelay - this_app->realdelay; // -realdelay ~ qosdelay
 					state.index_put_({0,index}, delay_indicator);
 					index++;
-					plr_indicator = this_app->QoSplr - this_app->realplr;
+					plr_indicator = this_app->QoSplr - this_app->realplr; // -realplr ~ qosplr
 					state.index_put_({0,index}, plr_indicator);
 					index++;
 
-					//printf("gbr/delay/plr indicator: %f %f %f\n", gbr_indicator, delay_indicator, plr_indicator);
+					// HH
+					// packet_indicator = -this_app->noRX - this_app->noTX; // -1~0
+					// state.index_put_({0,index}, packet_indicator);
+					// index++;
+					// tx_indicator = -this_app->noTX; // -1~0
+					// state.index_put_({0,index}, tx_indicator);
+					// index++;
+					// reward_indicator = this_app->reward / 0.9; // 0~1
+					// state.index_put_({0,index}, reward_indicator);
+					// index++;
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
@@ -473,6 +485,8 @@ h_log("debug303\n");
          	RealReward = torch::zeros(1);
 	      	for (std::vector<UESummary*>::iterator it = GetUESummaryContainer()->begin(); it != GetUESummaryContainer()->end(); ++it){
 	         	for (std::vector<Application*>::iterator itt = (*it)->GetApplicationContainer()->begin(); itt != (*it)->GetApplicationContainer()->end(); ++itt){
+					(*(*itt)).noTX = 0;
+					(*(*itt)).noRX = 0;
 
 					if ((*(*itt)).realgbr >= (*(*itt)).QoSgbr) {
 		               gbrReward = 1;
@@ -480,6 +494,7 @@ h_log("debug303\n");
 		            else {
 		               //gbrReward = 0;
 					   gbrReward = (*(*itt)).realgbr/(*(*itt)).QoSgbr;
+					   if(gbrReward<0) gbrReward=0;
 		            }   
 
 		            // there has been a TX
@@ -494,6 +509,7 @@ h_log("debug303\n");
 		            // there hasnt been a TX
 		            } else {
 		            	plrReward = 0;
+						(*(*itt)).noTX++;
 		            }
 
  					//if there has been a RX
@@ -508,20 +524,25 @@ h_log("debug303\n");
 			        // there hasnt been an RX
 			        } else {
 			        	delayReward = 0;
+						(*(*itt)).noRX++;
 			        }
 
-	            	(*(*itt)).reward = gbr_coef*gbrReward + plr_coef*plrReward + dly_coef*delayReward;  
+	            	(*(*itt)).reward = gbr_coef*gbrReward + plr_coef*plrReward + dly_coef*delayReward;
 					sum_reward += (*(*itt)).reward; 
 
 					sumgbr += (*(*itt)).realgbr;
 					sumdelay += (*(*itt)).realdelay;
 					sumplr += (*(*itt)).realplr;
-					num_counter++;
+
+					//if((int)TTIcounter%1000==0) printf("counter(%d) id(%d) gbr/plr/delay %f %f %f\n",
+					//	num_counter, (*(*itt)).id, gbr_coef*gbrReward, plr_coef*plrReward, dly_coef*delayReward);
+					//num_counter++;
+
 	         	}
 	      	}
 			sum_reward = sum_reward / (float) noUEs ;
 			Accum_Reward += sum_reward;
-			printf("\tAt %d TTI, TTI Reward= %f, \tAccum_reward= %f, #UEs %d\n", (int)TTIcounter, sum_reward, Accum_Reward, noUEs);
+			printf("\tAt %d TTI, TTI Reward= %f, \tAccum_reward= %f, #UEs %d \n", (int)TTIcounter, sum_reward, Accum_Reward, noUEs);
 			//printf("AVgbr/AVdelay/AVplr %f %f %f\n", sumgbr/num_counter,sumdelay/num_counter, sumplr/num_counter);
 		
 			RealReward.index_put_({0}, sum_reward);
@@ -624,6 +645,8 @@ h_log("debug303\n");
 
 		std::vector<UESummary*> *UESummaries;
 	public:
+		//int noTX;
+		//int noRX;
 		float TTIcounter;
 		int noAPPs;
 		int noUEs;

@@ -7,9 +7,7 @@
 
 template <typename T, typename R>
 class Agent{
-	private:
-		int current_step;
-		T* strategy;
+	private:		
 		int num_actions;
 		torch::DeviceType device;
 		// seed the RNG
@@ -19,6 +17,8 @@ class Agent{
         std::chrono::steady_clock::time_point start;
         std::chrono::steady_clock::time_point end;
 	public:
+		int current_step;
+		T* strategy;
 		Agent(T* strategy_, int num_actions_){
 			strategy     = strategy_;
 			num_actions  = num_actions_ - 1; // include 0
@@ -34,16 +34,10 @@ class Agent{
 			torch::Tensor explore_action = torch::zeros({2, 4});
 			uint32_t random_action = dist_actions(mt);
 
-			// for(int ada_index=0; ada_index < 4; ada_index++)
-			// {
-			//	mt.seed(rd());
-			//	explore_action.index_put_({0, ada_index}, dist_actions(mt));
-			//}			
 			explore_action.index_put_({0, 0}, (int)(random_action/1000));
 			explore_action.index_put_({0, 1}, (int)((random_action%1000)/100));
 			explore_action.index_put_({0, 2}, (int)(((random_action%1000)%100)/10));
 			explore_action.index_put_({0, 3}, (int)(((random_action%1000)%100)%10));
-
 			explore_action.index_put_({1}, 1);
 
 			printf("explore param %d %d %d %d\n", explore_action[0][0].item<int>(), explore_action[0][1].item<int>(), explore_action[0][2].item<int>(), explore_action[0][3].item<int>());
@@ -71,8 +65,6 @@ class Agent{
 			exploit_action.index_put_({0, 1}, (int)((arg_action%1000)/100));
 			exploit_action.index_put_({0, 2}, (int)(((arg_action%1000)%100)/10));
 			exploit_action.index_put_({0, 3}, (int)(((arg_action%1000)%100)%10));
-
-			h_log("debug403\n");
 			exploit_action.index_put_({1}, 0);
 
 			printf("exploit action %d %d %d %d\n", exploit_action[0][0].item<int>(), exploit_action[0][1].item<int>(), exploit_action[0][2].item<int>(), exploit_action[0][3].item<int>());

@@ -42,7 +42,7 @@ void loadStateDict(DQN model, DQN target_model);
 const int BATCH_SIZE        = 32;
 int TRAIN_TTI               = 7500;//7500;
 const int TEST_TTI          = 2500;//2500;
-const int MIN_REPLAY_MEM    = 1000;
+const int MIN_REPLAY_MEM    = 1;//1000;
 const float GAMMA           = 0.999;  // discount factor for bellman equation
 const float EPS_START       = 1.0;    // greedy stuff
 const float EPS_END         = 0.01;
@@ -125,12 +125,6 @@ h_log("debug-1\n");
   DQN policyNet(reset_state.size(1), ADA_ACTIONS);
   DQN targetNet(reset_state.size(1), ADA_ACTIONS);
 h_log("debug-2\n");
-  // DQN policyNet1(reset_state.size(1), ADA_ACTIONS);
-  // DQN targetNet1(reset_state.size(1), ADA_ACTIONS);
-  // DQN policyNet2(reset_state.size(1), ADA_ACTIONS);
-  // DQN targetNet2(reset_state.size(1), ADA_ACTIONS);
-  // DQN policyNet3(reset_state.size(1), ADA_ACTIONS);
-  // DQN targetNet3(reset_state.size(1), ADA_ACTIONS);
 
   // logging files for training 
   //  ~ please make sure that test_results/ is valid folder
@@ -165,31 +159,13 @@ h_log("debug100\n");
   loadStateDict(policyNet, targetNet); 
   policyNet->to(device);
   targetNet->to(device);
-  // loadStateDict(policyNet1, targetNet1); 
-  // policyNet1->to(device);
-  // targetNet1->to(device);
-  // loadStateDict(policyNet2, targetNet2); 
-  // policyNet2->to(device);
-  // targetNet2->to(device);
-  // loadStateDict(policyNet3, targetNet3);
-  // policyNet3->to(device);
-  // targetNet3->to(device);  
 
   // setting up training variables
   std::vector<experience> samples;
 h_log("debug101\n");
   torch::Tensor current_q_values, next_q_values, target_q_values;
-  // torch::Tensor current_q_values1, next_q_values1, target_q_values1;
-  // torch::Tensor current_q_values2, next_q_values2, target_q_values2;
-  // torch::Tensor current_q_values3, next_q_values3, target_q_values3;
+  torch::optim::Adam optimizer(policyNet->parameters(), torch::optim::AdamOptions(LR_START));
 
-//  torch::optim::SGD optimizer0(policyNet0->parameters(), torch::optim::SGDOptions(LR_START).momentum(MOMENTUM));
-//  torch::optim::SGD optimizer1(policyNet1->parameters(), torch::optim::SGDOptions(LR_START).momentum(MOMENTUM));
-//  torch::optim::SGD optimizer2(policyNet2->parameters(), torch::optim::SGDOptions(LR_START).momentum(MOMENTUM));
-    torch::optim::Adam optimizer(policyNet->parameters(), torch::optim::AdamOptions(LR_START));
-    // torch::optim::Adam optimizer1(policyNet1->parameters(), torch::optim::AdamOptions(LR_START));
-    // torch::optim::Adam optimizer2(policyNet2->parameters(), torch::optim::AdamOptions(LR_START));
-    // torch::optim::Adam optimizer3(policyNet3->parameters(), torch::optim::AdamOptions(LR_START));
 h_log("debug102\n");
 
 
@@ -224,7 +200,6 @@ h_log("debug while(1)\n");
     h_log("debug200\n");
 
     if(use_dqn){ // select action explore/exploit in dqn
-      h_log("debug201\n");
       action = agent->selectAction(state.to(device), policyNet);
     } else { // use fixed scheduler
       action.index_put_({0,0}, -1);
@@ -265,16 +240,8 @@ h_log("debug104\n");
 	    if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
         update_counter++;
         // access learning rate
-        //auto options = static_cast<torch::optim::SGDOptions&> (optimizer.defaults());
         auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
-        // auto options0 = static_cast<torch::optim::AdamOptions&> (optimizer0.defaults());
-        // auto options1 = static_cast<torch::optim::AdamOptions&> (optimizer1.defaults());
-        // auto options2 = static_cast<torch::optim::AdamOptions&> (optimizer2.defaults());
-        // auto options3 = static_cast<torch::optim::AdamOptions&> (optimizer3.defaults());
         options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-        // options1.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-        // options2.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-        // options3.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
 h_log("debug1\n");
 	    	//sample random batch and process
 	    	samples = exp->sampleMemory(BATCH_SIZE); 
@@ -282,34 +249,12 @@ h_log("debug1\n");
     
         // work out the qs
         current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-        // current_q_values1 = agent->CurrentQ(policyNet1, std::get<0>(batch), std::get<1>(batch));
-        // current_q_values2 = agent->CurrentQ(policyNet2, std::get<0>(batch), std::get<1>(batch));
-        // current_q_values3 = agent->CurrentQ(policyNet3, std::get<0>(batch), std::get<1>(batch));
-
-//printf("currentQ %f %f %f %f\n",
-          //current_q_values0.item().toFloat(), current_q_values1.item().toFloat(), current_q_values2.item().toFloat(), current_q_values3.item().toFloat());
 h_log("debug2\n");
 	      next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
-        // next_q_values1 = (agent->NextQ(targetNet1, std::get<2>(batch))).to(torch::kCPU);
-        // next_q_values2 = (agent->NextQ(targetNet2, std::get<2>(batch))).to(torch::kCPU);
-        // next_q_values3 = (agent->NextQ(targetNet3, std::get<2>(batch))).to(torch::kCPU);
-        
-        //printf("nextQ %f %f %f %f\n",
-          //next_q_values0.item().toFloat(), next_q_values1.item().toFloat(), next_q_values2.item().toFloat(), next_q_values3.item().toFloat());
-
         // bellman equation
         target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
-        // target_q_values1 = (next_q_values1.multiply(GAMMA)) +  std::get<3>(batch);
-        // target_q_values2 = (next_q_values2.multiply(GAMMA)) +  std::get<3>(batch);
-        // target_q_values3 = (next_q_values3.multiply(GAMMA)) +  std::get<3>(batch);
-       // printf("targetQ %f %f %f %f\n",
-         // target_q_values0.item().toFloat(), target_q_values1.item().toFloat(), target_q_values2.item().toFloat(), target_q_values3.item().toFloat());
-
         // loss and backprop
         torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-        // torch::Tensor loss1 = (torch::mse_loss(current_q_values1.to(device), target_q_values0.to(device))).to(device);
-        // torch::Tensor loss2 = (torch::mse_loss(current_q_values2.to(device), target_q_values0.to(device))).to(device);
-        // torch::Tensor loss3 = (torch::mse_loss(current_q_values3.to(device), target_q_values0.to(device))).to(device);
 printf("loss %f\n", loss.item().toFloat());
 
         loss.set_requires_grad(true);
