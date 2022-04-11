@@ -204,6 +204,14 @@ h_log("debug while(1)\n");
 
     if(use_dqn){ // select action explore/exploit in dqn
       action = agent->selectAction(state.to(device), policyNet);
+
+      printf("HH: loop 0~5\n");
+      action.index_put_({0,0}, -1);
+      action.index_put_({0,1}, ((int)networkEnv->TTIcounter % 5)*10);
+      action.index_put_({0,2}, -1);
+      action.index_put_({0,3}, -1);
+      action.index_put_({1}, -1);
+
     } else { // use fixed scheduler
       action.index_put_({0,0}, -1);
       action.index_put_({0,1}, constant_scheduler);

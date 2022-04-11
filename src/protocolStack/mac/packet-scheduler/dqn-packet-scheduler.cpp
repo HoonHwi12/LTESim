@@ -61,7 +61,7 @@ DQN_PacketScheduler::DoSchedule ()
 	std::cout << "Start EXP packet scheduler for node "
 			<< GetMacEntity ()->GetDevice ()->GetIDNetworkNode()<< std::endl;
 #endif
-
+printf("hoon dbug here0\n");
   UpdateAverageTransmissionRate ();
   CheckForDLDropPackets ();
   SelectFlowsToSchedule();
@@ -70,6 +70,7 @@ DQN_PacketScheduler::DoSchedule ()
 	{}
   else
 	{
+    printf("hoon dbug here3\n");
 	  RBsAllocation ();
 	}
 
@@ -80,6 +81,7 @@ DQN_PacketScheduler::DoSchedule ()
 double
 DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectralEfficiency, int subChannel)
 {
+  printf("hoon dbug here1\n");
   /*
    * For the DQN scheduler the metric is computed
    * as follows:

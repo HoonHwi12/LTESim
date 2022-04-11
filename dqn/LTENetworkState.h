@@ -267,13 +267,13 @@ class LTENetworkState{
 					index++;
 
 					// HH
-					packet_indicator = -this_app->noRX - this_app->noTX; // -2~0
+					packet_indicator = (-this_app->noRX - this_app->noTX); // -2~0
 					state.index_put_({0,index}, packet_indicator);
 					index++;
 					// tx_indicator = -this_app->noTX; // -1~0
 					// state.index_put_({0,index}, tx_indicator);
 					// index++;
-					reward_indicator = this_app->reward / 0.9; // 0~1
+					reward_indicator = this_app->reward; // 0~1
 					state.index_put_({0,index}, reward_indicator);
 					index++;
 
