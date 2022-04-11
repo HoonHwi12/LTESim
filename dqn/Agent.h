@@ -32,15 +32,11 @@ class Agent{
 			std::uniform_int_distribution<int> dist_actions(0, num_actions);
 			torch::Tensor explore_action = torch::zeros(5);
 
-			// for(int ada_index=0; ada_index < 4; ada_index++)
-			// {
-			// 	mt.seed(rd());
-			// 	explore_action.index_put_({ada_index}, dist_actions(mt));
-			// }			
-			explore_action.index_put_({0}, 0);
-			explore_action.index_put_({1}, 20);
-			explore_action.index_put_({2}, 0);
-			explore_action.index_put_({3}, 0);
+			for(int ada_index=0; ada_index < 4; ada_index++)
+			{
+				mt.seed(rd());
+				explore_action.index_put_({ada_index}, dist_actions(mt));
+			}			
 
 			explore_action.index_put_({4}, 1);
 			printf("Explore!\n");
