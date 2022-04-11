@@ -82,7 +82,7 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
   		int commonSeed = GetCommonSeed (seed);
 	  	srand (commonSeed);
 	} else {
-	  	srand (time(NULL));
+	  	srand (0);
 	}
   	std::cout << "Simulation with SEED = " << seed << std::endl;
 

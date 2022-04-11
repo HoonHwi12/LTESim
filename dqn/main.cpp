@@ -357,7 +357,7 @@ void OpenCQIFifo(int *fd){
 
 void OpenStateFifo(int *fd, int *noUEs){
   // create the state fifo
-  mkfifo(STATE_FIFO, S_IFIFO|0640);
+  mkfifo(STATE_FIFO, S_IFIFO|0770);
   char noUEs_in[80];
   int input_bytes;
   // block for LTESim to connect
