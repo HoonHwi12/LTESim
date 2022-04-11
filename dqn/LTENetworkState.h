@@ -196,7 +196,7 @@ class LTENetworkState{
 			// form the state size
 			// 1(#ues) + Each UE's(App QoS + cqi)
 		    //state_size = 1+noUEs*(3*noAPPs + cqi_size) + packet;
-			state_size = 1+noUEs*(3*noAPPs + cqi_size) ; //HH
+			state_size = 1+noUEs*(3*noAPPs + cqi_size) +2; //HH
 		    reset_state = torch::ones({1, state_size});
 		}
 
@@ -267,15 +267,15 @@ class LTENetworkState{
 					index++;
 
 					// HH
-					// packet_indicator = -this_app->noRX - this_app->noTX; // -1~0
-					// state.index_put_({0,index}, packet_indicator);
-					// index++;
+					packet_indicator = -this_app->noRX - this_app->noTX; // -1~0
+					state.index_put_({0,index}, packet_indicator);
+					index++;
 					// tx_indicator = -this_app->noTX; // -1~0
 					// state.index_put_({0,index}, tx_indicator);
 					// index++;
-					// reward_indicator = this_app->reward / 0.9; // 0~1
-					// state.index_put_({0,index}, reward_indicator);
-					// index++;
+					reward_indicator = this_app->reward / 0.9; // 0~1
+					state.index_put_({0,index}, reward_indicator);
+					index++;
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
