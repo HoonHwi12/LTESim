@@ -209,8 +209,8 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
   	float delayVideoBuff = 0.3;// 300 ms
   	float plrVideoBuff = 10e-6;
 
-  	int gbrVideoLive = 128;    // 180kbps
-	//int gbrVideoLive = 242;	// 242kbps
+  	//int gbrVideoLive = 128;    // 180kbps
+	int gbrVideoLive = 242;	// 242kbps
   	float delayVideoLive = 0.15;// 150ms
   	float plrVideoLive = 10e-3;
 
