@@ -1,4 +1,18 @@
+#ifndef DQN_h
+#define DQN_h
+
 #include <torch/torch.h>
+
+//#define HLOG
+#ifdef HLOG
+#define h_log(fmt, ...) \
+    do { fprintf(stderr, "[hoonhwi] Log: " fmt, ## __VA_ARGS__); } while (0)        
+#endif // HLOG
+
+#ifndef HLOG
+#define h_log(fmt, ...) \
+    do {  } while (0)        
+#endif // HLOG
 
 struct DQNImpl : torch::nn::Module {
 
@@ -19,6 +33,7 @@ struct DQNImpl : torch::nn::Module {
 	torch::nn::Linear linear1, linear2;
 };
 
+#endif
 // model 1
 // #include <torch/torch.h>
 

@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <torch/torch.h>
+#include "DQN.h"
 
 template <typename T, typename R>
 class Agent{

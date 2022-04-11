@@ -8,6 +8,7 @@
 #include <sstream> 
 
 #include <torch/torch.h>
+#include "DQN.h"
 
 typedef std::pair<int, int> id_size_pair;
 
