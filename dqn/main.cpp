@@ -35,8 +35,8 @@ void loadStateDict(DQN model, DQN target_model);
 
 /* HyperParams*/
 const int BATCH_SIZE        = 32;
-int TRAIN_TTI         = 7500;
-const int TEST_TTI          = 2500;
+int TRAIN_TTI               = 15000;
+const int TEST_TTI          = 5000;
 const int MIN_REPLAY_MEM    = 1000;
 const float GAMMA           = 0.999;  // discount factor for bellman equation
 const float EPS_START       = 1.0;    // greedy stuff
@@ -238,7 +238,9 @@ int main(int argc, char** argv) {
     if((networkEnv->TTIcounter > TRAIN_TTI )){
       networkEnv->TTI_increment();
       // scheduler 11 stops the UEs at current position
-      SendScheduler(&sh_fd, 11); 
+      //SendScheduler(&sh_fd, 11);
+      SendScheduler(&sh_fd, 0); // HH EDIT HERE
+
       update     = FetchState(&st_fd); 
       cqi_update = FetchCQIs(&cqi_fd);
       if (update.size() > 0 ){
@@ -250,13 +252,13 @@ int main(int argc, char** argv) {
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
-  networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
-  output_file.close();
+   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);  // HH DELETE 0
+   output_file.close();
 
   if(use_dqn){ // only testing loops for DQN
     torch::save(policyNet, model_name);
-    log_file_name = base + "_testing.txt";
-    output_file.open(log_file_name);
+     log_file_name = base + "_testing.txt"; //HH DELETE 1
+     output_file.open(log_file_name);
     int training_ttis = networkEnv->TTIcounter;
 
     while(1){ // testing loop
@@ -278,9 +280,12 @@ int main(int argc, char** argv) {
       } 
       networkEnv->UpdateNetworkState(update); // process new state
       networkEnv->ProcessCQIs(cqi_update); // process cqis
+
+      //torch::Tensor next_state  = networkEnv->CurrentState(false); // HH ADDED 1
+
       torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
       reward_copy = reward[0].item<float>();
-      output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
+      output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl; //HH DELETE2
       if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
     } // testing loop
     output_file.close();

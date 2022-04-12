@@ -245,15 +245,15 @@ class LTENetworkState{
 				for (std::vector<Application*>::iterator itt = this_UE->GetApplicationContainer()->begin(); itt != this_UE->GetApplicationContainer()->end(); ++itt){
 					this_app = (*itt);
 					// indicator = requirement - measured
-					// gbr_indicator = this_app->realgbr - this_app->QoSgbr;
-					// state.index_put_({0,index}, gbr_indicator);
-					// index++;
-					// delay_indicator = this_app->QoSdelay - this_app->realdelay;
-					// state.index_put_({0,index}, delay_indicator);
-					// index++;
-					// plr_indicator = this_app->QoSplr - this_app->realplr;
-					// state.index_put_({0,index}, plr_indicator);
-					// index++;
+					gbr_indicator = this_app->realgbr - this_app->QoSgbr;
+					state.index_put_({0,index}, gbr_indicator);
+					index++;
+					delay_indicator = this_app->QoSdelay - this_app->realdelay;
+					state.index_put_({0,index}, delay_indicator);
+					index++;
+					plr_indicator = this_app->QoSplr - this_app->realplr;
+					state.index_put_({0,index}, plr_indicator);
+					index++;
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
@@ -261,11 +261,11 @@ class LTENetworkState{
 					sum_counter++;
 				}
 				// UE CQIs
-				// this_UE_cqis = this_UE->GetCQIContainer();
-				// for (std::vector<int>::iterator ittt = this_UE_cqis->begin(); ittt != this_UE_cqis->end(); ++ittt){
-				// 	state.index_put_({0,index}, (*ittt));
-				// 	index++;
-				// }
+				this_UE_cqis = this_UE->GetCQIContainer();
+				for (std::vector<int>::iterator ittt = this_UE_cqis->begin(); ittt != this_UE_cqis->end(); ++ittt){
+					state.index_put_({0,index}, (*ittt));
+					index++;
+				}
 			}
 
 			if(print_qos) printf("TTI:%f/ AVgbr/AVdelay/AVplr %f %f %f\n", TTIcounter, gbr_sum/sum_counter,delay_sum/sum_counter, plr_sum/sum_counter);
