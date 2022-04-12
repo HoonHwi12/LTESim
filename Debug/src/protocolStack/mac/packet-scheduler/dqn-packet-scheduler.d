@@ -64,6 +64,7 @@ src/protocolStack/mac/packet-scheduler/dqn-packet-scheduler.d: \
  ../src/protocolStack/mac/packet-scheduler/../../../phy/lte-phy.h \
  ../src/protocolStack/mac/packet-scheduler/../../../core/spectrum/bandwidth-manager.h \
  ../src/protocolStack/mac/packet-scheduler/dl-exp-packet-scheduler.h \
+ ../src/protocolStack/mac/packet-scheduler/dl-fls-packet-scheduler.h \
  ../src/protocolStack/mac/packet-scheduler/../../../flows/QoS/QoSForEXP.h \
  ../src/protocolStack/mac/packet-scheduler/../../../flows/QoS/QoSParameters.h \
  ../src/protocolStack/mac/packet-scheduler/../../../flows/QoS/QoSForM_LWDF.h
@@ -195,6 +196,8 @@ src/protocolStack/mac/packet-scheduler/dqn-packet-scheduler.d: \
 ../src/protocolStack/mac/packet-scheduler/../../../core/spectrum/bandwidth-manager.h:
 
 ../src/protocolStack/mac/packet-scheduler/dl-exp-packet-scheduler.h:
+
+../src/protocolStack/mac/packet-scheduler/dl-fls-packet-scheduler.h:
 
 ../src/protocolStack/mac/packet-scheduler/../../../flows/QoS/QoSForEXP.h:
 

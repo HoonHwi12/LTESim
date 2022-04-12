@@ -625,6 +625,8 @@ h_log("debug303\n");
 				std::vector<Application*> *appcontainer = this_UE->GetApplicationContainer();
 				for(std::vector<Application*>::iterator itt = appcontainer->begin(); itt != appcontainer->end(); ++itt){
 					Application* this_app = *itt;
+					printf("ID(%d)/SatGBR/SatDelay/SatPLR %f %f %f\n",
+        				this_app->id, this_app->appSatGBRCount, this_app->appSatDelayCount, this_app->appSatPLRCount);
 					output_file << this_app->id << ", " << this_app->appSatPLRCount
 									<< ", " << this_app->appSatDelayCount
 										<< ", " << this_app->appSatGBRCount << std::endl;

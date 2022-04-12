@@ -34,6 +34,7 @@
 #include "../../../core/idealMessages/ideal-control-messages.h"
 
 #include "dl-exp-packet-scheduler.h"
+#include "dl-fls-packet-scheduler.h"
 #include "../../../flows/QoS/QoSForEXP.h"
 #include "../../../flows/QoS/QoSForM_LWDF.h"
 
@@ -61,7 +62,7 @@ DQN_PacketScheduler::DoSchedule ()
 	std::cout << "Start EXP packet scheduler for node "
 			<< GetMacEntity ()->GetDevice ()->GetIDNetworkNode()<< std::endl;
 #endif
-printf("hoon dbug here0\n");
+
   UpdateAverageTransmissionRate ();
   CheckForDLDropPackets ();
   SelectFlowsToSchedule();
@@ -70,7 +71,6 @@ printf("hoon dbug here0\n");
 	{}
   else
 	{
-    printf("hoon dbug here3\n");
 	  RBsAllocation ();
 	}
 
@@ -81,8 +81,7 @@ printf("hoon dbug here0\n");
 double
 DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectralEfficiency, int subChannel)
 {
-  printf("hoon dbug here1\n");
-  /*
+   /*
    * For the DQN scheduler the metric is computed
    * as follows:
    */
@@ -100,9 +99,10 @@ DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectr
   
 
   if (bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_INFINITE_BUFFER ||
-      bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_CBR)
+      bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_CBR ||
+      bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_TRACE_BASED ||
+		  bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_VOIP)
   {
-    // FLS && DL_EXP && PF && LOG && MLWDF
 	  metric = (spectralEfficiency * 180000.) / bearer->GetAverageTransmissionRate();
   }
   else
@@ -126,10 +126,10 @@ DQN_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spectr
               * pow(ComputeEXPrule(bearer), weight3* pow((weight3/avg_weight),2)); //EXP rule
     */
    metric = (spectralEfficiency * 180000.) / bearer->GetAverageTransmissionRate() // PF
-              * pow(ComputeEXP(bearer), weight0) // EXP
-              * pow(ComputeLOG(bearer), weight1) // LOG
-              * pow(ComputeMLWDF(bearer), weight2) // MLWDF
-              * pow(ComputeEXPrule(bearer), weight3); //EXP rule
+               * pow(ComputeEXP(bearer), weight0) // EXP
+               * pow(ComputeLOG(bearer), weight1) // LOG
+               * pow(ComputeMLWDF(bearer), weight2) // MLWDF
+               * pow(ComputeEXPrule(bearer), weight3); //EXP rule
     }
 
     return metric;

@@ -190,7 +190,6 @@ DL_FLS_PacketScheduler::ComputeSchedulingMetric (RadioBearer *bearer, double spe
   if (bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_TRACE_BASED ||
 		  bearer->GetApplication ()->GetApplicationType () == Application::APPLICATION_TYPE_VOIP)
     {
-
       if (GetLowerLevelSchedulerType () == DL_FLS_PacketScheduler::MAXIMUM_THROUGHPUT)
         {
 	      metric = spectralEfficiency * 180000.;

@@ -40,8 +40,8 @@ void loadStateDict(DQN model, DQN target_model);
 
 /* HyperParams*/
 const int BATCH_SIZE        = 32;
-int TRAIN_TTI               = 7500;//7500;
-const int TEST_TTI          = 2500;//2500;
+int TRAIN_TTI               = 15000;//7500;
+const int TEST_TTI          = 5000;//2500;
 const int MIN_REPLAY_MEM    = 1000;//1000;
 const float GAMMA           = 0.999;  // discount factor for bellman equation
 const float EPS_START       = 1.0;    // greedy stuff
@@ -59,7 +59,7 @@ const int NUM_ACTIONS       = 6;    // number of schedulers
 const int CQI_SIZE          = 25;   // number of downlink channels per eNB
 
 //Adaptive DQN
-const int ADA_ACTIONS       = 10000;    // 21*21*21*21=194481
+const int ADA_ACTIONS       = 17569; // 14641 + 2928
 const int NUM_OUTPUT       = 4;    // 0~100 * 0.01
 
 // training times
@@ -200,18 +200,20 @@ h_log("debug while(1)\n");
 
   	// selecting an action
     torch::Tensor action = torch::zeros({2,4});
+    torch::Tensor action_input = torch::zeros(1);
     h_log("debug200\n");
 
     if(use_dqn){ // select action explore/exploit in dqn
       action = agent->selectAction(state.to(device), policyNet);
-
-      printf("HH: loop 0~5\n");
-      action.index_put_({0,0}, -1);
-      action.index_put_({0,1}, ((int)networkEnv->TTIcounter % 5)*10);
-      action.index_put_({0,2}, -1);
-      action.index_put_({0,3}, -1);
-      action.index_put_({1}, -1);
-
+      if(action[0][0].item<int>() >= 0)
+      {
+        action_input.index_put_({0}, action[0][0].item<int>() * 1331
+              + action[0][1].item<int>() * 121
+              + action[0][2].item<int>() * 11
+              + action[0][3].item<int>() );
+      }
+      else action_input.index_put_({0}, action[0][2].item<int>());
+      
     } else { // use fixed scheduler
       action.index_put_({0,0}, -1);
       action.index_put_({0,1}, constant_scheduler);
@@ -241,7 +243,7 @@ h_log("debug104\n");
     reward_copy = reward[0].item<float>();
 
     // store experiece in replay memory
-    exp->push(state.to(torch::kCPU), action.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
+    exp->push(state.to(torch::kCPU), action_input.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
 
     //start = std::chrono::steady_clock::now(); //training time logging
     clock_t infstart=clock();
@@ -266,7 +268,7 @@ h_log("debug2\n");
         target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
         // loss and backprop
         torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-printf("loss %f\n", loss.item().toFloat());
+        printf("loss %f\n", loss.item().toFloat());
 
         loss.set_requires_grad(true);
         optimizer.zero_grad();
@@ -310,10 +312,14 @@ h_log("debug3\n");
     */
     
     // decide to break to testing
-    if((networkEnv->TTIcounter > TRAIN_TTI )){
+    if((networkEnv->TTIcounter > TRAIN_TTI ))
+    {
       networkEnv->TTI_increment();
       // scheduler 11 stops the UEs at current position
-      SendScheduler(&sh_fd, 11); 
+
+      //SendScheduler(&sh_fd, 11);
+      SendScheduler(&sh_fd, 0);
+
       update     = FetchState(&st_fd); 
       cqi_update = FetchCQIs(&cqi_fd);
       if (update.size() > 0 ){
@@ -325,7 +331,7 @@ h_log("debug3\n");
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
-  //networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
+  networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
   /*
   output_file0.close();
   output_file1.close();
@@ -380,6 +386,9 @@ h_log("debug-10\n");
       }
       networkEnv->UpdateNetworkState(update); // process new state
       networkEnv->ProcessCQIs(cqi_update); // process cqis
+
+      //torch::Tensor next_state  = networkEnv->CurrentState(false); // HH ADDED 0
+
       torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
       reward_copy = reward[0].item<float>();
 
@@ -400,7 +409,8 @@ h_log("debug-12\n");
     output_file3.close();
     */
 
-    //networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
+    networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
+
   } // only dqn should test loop
 
   close(sh_fd);

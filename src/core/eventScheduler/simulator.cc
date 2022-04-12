@@ -378,6 +378,7 @@ void Simulator::FormCQIMessage(ENodeB *eNB, std::string *target_string){
       }
       *target_string += cqiString + "\n";
       cqiString = "";
+     
     }
 
 }

@@ -32,14 +32,26 @@ class Agent{
 		torch::Tensor explore(torch::Tensor state){
 			h_log("debug 410\n");
 			std::uniform_int_distribution<int> dist_actions(0, num_actions);
+			//std::uniform_int_distribution<int> dist_actions(0, 4);
 			torch::Tensor explore_action = torch::zeros({2, 4});
 			uint32_t random_action = dist_actions(mt);
 
-			explore_action.index_put_({0, 0}, (int)(random_action/1000));
-			explore_action.index_put_({0, 1}, (int)((random_action%1000)/100));
-			explore_action.index_put_({0, 2}, (int)(((random_action%1000)%100)/10));
-			explore_action.index_put_({0, 3}, (int)(((random_action%1000)%100)%10));
-			explore_action.index_put_({1}, 1);
+			if(random_action > 14641)
+			{
+				explore_action.index_put_({0, 0}, -1);
+				explore_action.index_put_({0, 1}, 3);
+				explore_action.index_put_({0, 2}, (int)random_action);
+				explore_action.index_put_({0, 3}, -1);
+				explore_action.index_put_({1}, 1);
+			}
+			else
+			{
+				explore_action.index_put_({0, 0}, (int)(random_action/1331));
+				explore_action.index_put_({0, 1}, (int)((random_action%1331)/121));
+				explore_action.index_put_({0, 2}, (int)(((random_action%1331)%121)/11));
+				explore_action.index_put_({0, 3}, (int)(((random_action%1331)%121)%11));
+				explore_action.index_put_({1}, 1);
+			}
 
 			printf("explore param %d %d %d %d\n", explore_action[0][0].item<int>(), explore_action[0][1].item<int>(), explore_action[0][2].item<int>(), explore_action[0][3].item<int>());
 			printf("Explore!\n");
@@ -55,19 +67,29 @@ class Agent{
 			start = std::chrono::steady_clock::now();
 			clock_t infstart = clock();
 			torch::Tensor output = policy_net->forward(state);			
-
-			end = std::chrono::steady_clock::now();
 			h_log("debug401\n");
 			torch::Tensor exploit_action = torch::zeros({2, 4});
 			uint32_t arg_action = at::argmax(output, 1).item<int>();
+			end = std::chrono::steady_clock::now();
 			h_log("debug402\n");
 			if(timeLog) printf("InferenceTime %0.7f ms/ Exploit! \n", (float)(clock()-infstart)/CLOCKS_PER_SEC);
 
-			exploit_action.index_put_({0, 0}, (int)(arg_action/1000));
-			exploit_action.index_put_({0, 1}, (int)((arg_action%1000)/100));
-			exploit_action.index_put_({0, 2}, (int)(((arg_action%1000)%100)/10));
-			exploit_action.index_put_({0, 3}, (int)(((arg_action%1000)%100)%10));
-			exploit_action.index_put_({1}, 0);
+			if(arg_action > 14641)
+			{
+				exploit_action.index_put_({0, 0}, -1);
+				exploit_action.index_put_({0, 1}, 3);
+				exploit_action.index_put_({0, 2}, (int)arg_action);
+				exploit_action.index_put_({0, 3}, -1);
+				exploit_action.index_put_({1}, 1);
+			}
+			else
+			{
+				exploit_action.index_put_({0, 0}, (int)(arg_action/1331));
+				exploit_action.index_put_({0, 1}, (int)((arg_action%1331)/121));
+				exploit_action.index_put_({0, 2}, (int)(((arg_action%1331)%121)/11));
+				exploit_action.index_put_({0, 3}, (int)(((arg_action%1331)%121)%11));
+				exploit_action.index_put_({1}, 0);
+			}
 
 			printf("exploit action %d %d %d %d\n", exploit_action[0][0].item<int>(), exploit_action[0][1].item<int>(), exploit_action[0][2].item<int>(), exploit_action[0][3].item<int>());
 		

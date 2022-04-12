@@ -688,7 +688,7 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
 	  	double start_time = 0.1 + GetRandomVariable (5.);
 	  	double duration_time = start_time + flow_duration;
 
-	  	// *** LIVE video application
+	  	// *** CBR application
 	  	// create application
 	  	// create application
 		CBRApplication[cbrApplication].SetSource (gw);
