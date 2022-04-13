@@ -70,6 +70,7 @@ const int NUM_OUTPUT       = 4;    // 0~100 * 0.01
 int main(int argc, char** argv) {
 	int constant_scheduler = 0;
   bool use_dqn = true;
+  bool model_saved = false;
 
   printf("batch(%d)/minReplay(%d)/EPS(%0.2f~%0.2f/%0.4f)/Update(%d)\n",
     BATCH_SIZE, MIN_REPLAY_MEM, EPS_START, EPS_END, EPS_DECAY, NET_UPDATE);
@@ -124,10 +125,10 @@ int main(int argc, char** argv) {
   
   Agent<EpsilonGreedy, DQN>* agent = new Agent<EpsilonGreedy, DQN>(eps,ADA_ACTIONS);
 
-h_log("debug-1\n");
+  h_log("debug-1\n");
   DQN policyNet(reset_state.size(1), ADA_ACTIONS);
   DQN targetNet(reset_state.size(1), ADA_ACTIONS);
-h_log("debug-2\n");
+  h_log("debug-2\n");
 
   // logging files for training 
   //  ~ please make sure that test_results/ is valid folder
@@ -136,28 +137,7 @@ h_log("debug-2\n");
   log_file_name      = base + "_training.txt";
   model_name         = base + "_model.pt";
 
-h_log("debug-3\n");
-  //std::ofstream output_file0(log_file_name0);
-
-  // std::string log_file_name1, model_name1, base1;
-  // base1               = "test_results/" + scheduler_string + "1_" + std::to_string(noUEs);
-  // log_file_name1      = base1 + "_training.txt";
-  // model_name1         = base1 + "_model.pt";
-  // //std::ofstream output_file1(log_file_name1);
-
-  // std::string log_file_name2, model_name2, base2;
-  // base2               = "test_results/" + scheduler_string + "2_" + std::to_string(noUEs);
-  // log_file_name2      = base2 + "_training.txt";
-  // model_name2         = base2 + "_model.pt";
-  // //std::ofstream output_file2(log_file_name2);
-  
-  // std::string log_file_name3, model_name3, base3;
-  // base3               = "test_results/" + scheduler_string + "3_" + std::to_string(noUEs);
-  // log_file_name3      = base3 + "_training.txt";
-  // model_name3         = base3 + "_model.pt";
-  //std::ofstream output_file3(log_file_name3);
-h_log("debug100\n");
-
+  h_log("debug-3\n");
   // copy weights to targetnet
   loadStateDict(policyNet, targetNet); 
   policyNet->to(device);
@@ -165,11 +145,10 @@ h_log("debug100\n");
 
   // setting up training variables
   std::vector<experience> samples;
-h_log("debug101\n");
+  h_log("debug101\n");
   torch::Tensor current_q_values, next_q_values, target_q_values;
   torch::optim::Adam optimizer(policyNet->parameters(), torch::optim::AdamOptions(LR_START));
-
-h_log("debug102\n");
+  h_log("debug102\n");
 
 
   // get update from first update packets
@@ -188,7 +167,7 @@ h_log("debug102\n");
   int update_counter = 0;
   bool explore = true;
 
-h_log("debug103\n");
+  h_log("debug103\n");
   if(!use_dqn)
   {
     TRAIN_TTI += TEST_TTI;
@@ -245,117 +224,77 @@ h_log("debug103\n");
     networkEnv->UpdateNetworkState(update); 
     networkEnv->ProcessCQIs(cqi_update);
     // next state and reward
-    torch::Tensor next_state  = networkEnv->CurrentState(false);
+    torch::Tensor reward = networkEnv->CalculateReward(); 
     reward_copy = reward[0].item<float>();
 
-    if(networkEnv->TTIcounter < TRAIN_TTI)
+    if( (networkEnv->TTIcounter < TRAIN_TTI) && use_dqn)
     {
-      torch::Tensor reward = networkEnv->CalculateReward(); 
+      torch::Tensor next_state  = networkEnv->CurrentState(false);
       // store experiece in replay memory
       exp->push(state.to(torch::kCPU), action_input.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
 
       //start = std::chrono::steady_clock::now(); //training time logging
       clock_t infstart=clock();
 
-      if(use_dqn) // if we are using dqn
-      { 
-        // if enough samples
-        if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
-          update_counter++;
-          // access learning rate
-          auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
-          options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-          h_log("debug1\n");
-          //sample random batch and process
-          samples = exp->sampleMemory(BATCH_SIZE); 
-          experience batch = processSamples(samples);
-      
-          // work out the qs
-          current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-          h_log("debug2\n");
-          next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
-          // bellman equation
-          target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
-          // loss and backprop
-          torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-          printf("loss %f\n", loss.item().toFloat());
-
-          loss.set_requires_grad(true);
-          optimizer.zero_grad();
-          loss.backward();
-          optimizer.step();
-          h_log("debug3\n");
-
-          // update targetNet with policyNey parameters
-          if(update_counter > NET_UPDATE){
-            // copy weights to targetnet
-            loadStateDict(policyNet, targetNet);
-            update_counter = 0;
-          }
-        } // enough samples
-      }// fixed scheduler
-    }
-
-    // training time logging
-    //end = std::chrono::steady_clock::now();
-    //duration = end - start;    
-    h_log("debug4\n");
-    // checks the valid-TTI's explore/exploitation count
-    if (action[1][0].item<int>() == 0) valid_TTI_exploit++;
-    else if(action[1][0].item<int>() > 0) valid_TTI_explore++;
-    h_log("debug5\n");
-    printf("\tInferenceTime %0.7f ms\tExploit %d,\tExplore %d\n", (float)(clock()-infstart)/CLOCKS_PER_SEC, valid_TTI_exploit, valid_TTI_explore);
-
-    //output to file 
-    /*
-    if((int)networkEnv->TTIcounter % 100 == 0){
-      if(use_dqn){
-        output_file0 << networkEnv->TTIcounter << ", " << reward_copy << ", " << valid_TTI_explore << ", " << valid_TTI_exploit << ", "  << duration.count() << std::endl;
-        output_file1 << networkEnv->TTIcounter << ", " << reward_copy << ", " << valid_TTI_explore << ", " << valid_TTI_exploit << ", "  << duration.count() << std::endl;
-        output_file2 << networkEnv->TTIcounter << ", " << reward_copy << ", " << valid_TTI_explore << ", " << valid_TTI_exploit << ", "  << duration.count() << std::endl;
-        output_file3 << networkEnv->TTIcounter << ", " << reward_copy << ", " << valid_TTI_explore << ", " << valid_TTI_exploit << ", "  << duration.count() << std::endl;
-      } else {
-        output_file0 << networkEnv->TTIcounter << ", " << reward_copy <<  ", "  << duration.count() << std::endl;
-        output_file1 << networkEnv->TTIcounter << ", " << reward_copy <<  ", "  << duration.count() << std::endl;
-        output_file2 << networkEnv->TTIcounter << ", " << reward_copy <<  ", "  << duration.count() << std::endl;
-        output_file3 << networkEnv->TTIcounter << ", " << reward_copy <<  ", "  << duration.count() << std::endl;
-      }
-    }
-    */
+      // if(use_dqn) // if we are using dqn
+      // { 
+      // if enough samples
+      if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
+        update_counter++;
+        // access learning rate
+        auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
+        options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
+        h_log("debug1\n");
+        //sample random batch and process
+        samples = exp->sampleMemory(BATCH_SIZE); 
+        experience batch = processSamples(samples);
     
-    // decide to break to testing
-    // if((networkEnv->TTIcounter > TRAIN_TTI ))
-    // {
-    //   networkEnv->TTI_increment();
-    //   // scheduler 11 stops the UEs at current position
+        // work out the qs
+        current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
+        h_log("debug2\n");
+        next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+        // bellman equation
+        target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
+        // loss and backprop
+        torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
+        printf("loss %f\n", loss.item().toFloat());
 
-    //   //SendScheduler(&sh_fd, 11);
-    //   SendScheduler(&sh_fd, 0);
+        loss.set_requires_grad(true);
+        optimizer.zero_grad();
+        loss.backward();
+        optimizer.step();
+        h_log("debug3\n");
 
-    //   update     = FetchState(&st_fd); 
-    //   cqi_update = FetchCQIs(&cqi_fd);
-    //   if (update.size() > 0 ){
-    //     networkEnv->UpdateNetworkState(update); 
-    //     networkEnv->ProcessCQIs(cqi_update); 
-    //   }
-    //   break; // break out of training loog
-    // }
+        // update targetNet with policyNey parameters
+        if(update_counter > NET_UPDATE){
+          // copy weights to targetnet
+          loadStateDict(policyNet, targetNet);
+          update_counter = 0;
+        }
+      } // enough samples
 
-    if((networkEnv->TTIcounter > TRAIN_TTI ))
-    {
-      torch::save(policyNet, model_name);
-    }
+      // training time logging
+      //end = std::chrono::steady_clock::now();
+      //duration = end - start;    
+      h_log("debug4\n");
+      // checks the valid-TTI's explore/exploitation count
+      if (action[1][0].item<int>() == 0) valid_TTI_exploit++;
+      else if(action[1][0].item<int>() > 0) valid_TTI_explore++;
+      h_log("debug5\n");
+      printf("\tInferenceTime %0.7f ms\tExploit %d,\tExplore %d\n", (float)(clock()-infstart)/CLOCKS_PER_SEC, valid_TTI_exploit, valid_TTI_explore);
+
+      if( model_saved == false && (networkEnv->TTIcounter > TRAIN_TTI ))
+      {
+        model_saved = true;
+        torch::save(policyNet, model_name);
+      }
+    } // training loop
+    
+    if(networkEnv->TTIcounter >= (TRAIN_TTI + TEST_TTI)) break;
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
-  /*
-  output_file0.close();
-  output_file1.close();
-  output_file2.close();
-  output_file3.close();
-  */
-
 
 
   // if(use_dqn){ // only testing loops for DQN
