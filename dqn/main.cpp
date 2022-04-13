@@ -132,10 +132,11 @@ int main(int argc, char** argv) {
 
   // logging files for training 
   //  ~ please make sure that test_results/ is valid folder
-  std::string log_file_name, model_name, base;
+  std::string log_file_name, model_name, state_name, base;
   base               = "test_results/" + scheduler_string + std::to_string(noUEs);
   log_file_name      = base + "_training.txt";
   model_name         = base + "_model.pt";
+  state_name         = base + "_state.pt";
 
   h_log("debug-3\n");
   // copy weights to targetnet
@@ -283,11 +284,14 @@ int main(int argc, char** argv) {
       h_log("debug5\n");
       printf("\tInferenceTime %0.7f ms\tExploit %d,\tExplore %d\n", (float)(clock()-infstart)/CLOCKS_PER_SEC, valid_TTI_exploit, valid_TTI_explore);
 
-      if( model_saved == false && (networkEnv->TTIcounter > TRAIN_TTI ))
-      {
-        model_saved = true;
-        torch::save(policyNet, model_name);
-      }
+      // if( model_saved == false && (networkEnv->TTIcounter > TRAIN_TTI ))
+      // {
+      //   model_saved = true;
+      //   torch::save(policyNet, model_name);
+      //   torch::save(state, state_name);
+        
+      //   //torch::load(policyNet, model_name);
+      // }
     } // training loop
     
     if(networkEnv->TTIcounter >= (TRAIN_TTI + TEST_TTI)) break;
