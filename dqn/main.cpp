@@ -194,7 +194,7 @@ h_log("debug103\n");
     TRAIN_TTI += TEST_TTI;
   }
   while(1){ // training loop
-h_log("debug while(1)\n");
+    h_log("debug while(1)\n");
   	torch::Tensor state = networkEnv->CurrentState(true);
   	networkEnv->TTI_increment();
 
@@ -204,16 +204,22 @@ h_log("debug while(1)\n");
     h_log("debug200\n");
 
     if(use_dqn){ // select action explore/exploit in dqn
-      action = agent->selectAction(state.to(device), policyNet);
-      if(action[0][0].item<int>() >= 0)
+      if(networkEnv->TTIcounter > TRAIN_TTI)
       {
-        action_input.index_put_({0}, action[0][0].item<int>() * 1331
-              + action[0][1].item<int>() * 121
-              + action[0][2].item<int>() * 11
-              + action[0][3].item<int>() );
+        action = agent->exploit(state.to(device), policyNet, true);
       }
-      else action_input.index_put_({0}, action[0][2].item<int>());
-      
+      else
+      {
+        action = agent->selectAction(state.to(device), policyNet);
+        if(action[0][0].item<int>() >= 0)
+        {
+          action_input.index_put_({0}, action[0][0].item<int>() * 1331
+                + action[0][1].item<int>() * 121
+                + action[0][2].item<int>() * 11
+                + action[0][3].item<int>() );
+        }
+        else action_input.index_put_({0}, action[0][2].item<int>());
+      }
     } else { // use fixed scheduler
       action.index_put_({0,0}, -1);
       action.index_put_({0,1}, constant_scheduler);
@@ -221,7 +227,8 @@ h_log("debug while(1)\n");
       action.index_put_({0,3}, -1);
       action.index_put_({1}, -1);
     }
-h_log("debug104\n");
+    h_log("debug104\n");
+
   	//SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
     SendScheduler(&sh_fd, action[0][0].item<int>(), action[0][1].item<int>(), action[0][2].item<int>(), action[0][3].item<int>());
 
@@ -239,50 +246,55 @@ h_log("debug104\n");
     networkEnv->ProcessCQIs(cqi_update);
     // next state and reward
     torch::Tensor next_state  = networkEnv->CurrentState(false);
-    torch::Tensor reward = networkEnv->CalculateReward(); 
     reward_copy = reward[0].item<float>();
 
-    // store experiece in replay memory
-    exp->push(state.to(torch::kCPU), action_input.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
+    if(networkEnv->TTIcounter < TRAIN_TTI)
+    {
+      torch::Tensor reward = networkEnv->CalculateReward(); 
+      // store experiece in replay memory
+      exp->push(state.to(torch::kCPU), action_input.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
 
-    //start = std::chrono::steady_clock::now(); //training time logging
-    clock_t infstart=clock();
+      //start = std::chrono::steady_clock::now(); //training time logging
+      clock_t infstart=clock();
 
-    if(use_dqn){ // if we are using dqn
-    	// if enough samples
-	    if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
-        update_counter++;
-        // access learning rate
-        auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
-        options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-h_log("debug1\n");
-	    	//sample random batch and process
-	    	samples = exp->sampleMemory(BATCH_SIZE); 
-        experience batch = processSamples(samples);
-    
-        // work out the qs
-        current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-h_log("debug2\n");
-	      next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
-        // bellman equation
-        target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
-        // loss and backprop
-        torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-        printf("loss %f\n", loss.item().toFloat());
+      if(use_dqn) // if we are using dqn
+      { 
+        // if enough samples
+        if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
+          update_counter++;
+          // access learning rate
+          auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
+          options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
+          h_log("debug1\n");
+          //sample random batch and process
+          samples = exp->sampleMemory(BATCH_SIZE); 
+          experience batch = processSamples(samples);
+      
+          // work out the qs
+          current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
+          h_log("debug2\n");
+          next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+          // bellman equation
+          target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
+          // loss and backprop
+          torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
+          printf("loss %f\n", loss.item().toFloat());
 
-        loss.set_requires_grad(true);
-        optimizer.zero_grad();
-        loss.backward();
-        optimizer.step();
-h_log("debug3\n");
-        // update targetNet with policyNey parameters
-        if(update_counter > NET_UPDATE){
-	        // copy weights to targetnet
-	        loadStateDict(policyNet, targetNet);
-	        update_counter = 0;
-        }
-	    } // enough samples
-    }// fixed scheduler
+          loss.set_requires_grad(true);
+          optimizer.zero_grad();
+          loss.backward();
+          optimizer.step();
+          h_log("debug3\n");
+
+          // update targetNet with policyNey parameters
+          if(update_counter > NET_UPDATE){
+            // copy weights to targetnet
+            loadStateDict(policyNet, targetNet);
+            update_counter = 0;
+          }
+        } // enough samples
+      }// fixed scheduler
+    }
 
     // training time logging
     //end = std::chrono::steady_clock::now();
@@ -312,21 +324,26 @@ h_log("debug3\n");
     */
     
     // decide to break to testing
+    // if((networkEnv->TTIcounter > TRAIN_TTI ))
+    // {
+    //   networkEnv->TTI_increment();
+    //   // scheduler 11 stops the UEs at current position
+
+    //   //SendScheduler(&sh_fd, 11);
+    //   SendScheduler(&sh_fd, 0);
+
+    //   update     = FetchState(&st_fd); 
+    //   cqi_update = FetchCQIs(&cqi_fd);
+    //   if (update.size() > 0 ){
+    //     networkEnv->UpdateNetworkState(update); 
+    //     networkEnv->ProcessCQIs(cqi_update); 
+    //   }
+    //   break; // break out of training loog
+    // }
+
     if((networkEnv->TTIcounter > TRAIN_TTI ))
     {
-      networkEnv->TTI_increment();
-      // scheduler 11 stops the UEs at current position
-
-      //SendScheduler(&sh_fd, 11);
-      SendScheduler(&sh_fd, 0);
-
-      update     = FetchState(&st_fd); 
-      cqi_update = FetchCQIs(&cqi_fd);
-      if (update.size() > 0 ){
-        networkEnv->UpdateNetworkState(update); 
-        networkEnv->ProcessCQIs(cqi_update); 
-      }
-      break; // break out of training loog
+      torch::save(policyNet, model_name);
     }
   }// training loop
 
@@ -341,77 +358,43 @@ h_log("debug3\n");
 
 
 
-  if(use_dqn){ // only testing loops for DQN
-    torch::save(policyNet, model_name);
-h_log("debug-10\n");
-    //log_file_name0 = base0 + "_training.txt";
-    //log_file_name1 = base1 + "_training.txt";
-    //log_file_name2 = base2 + "_training.txt";
-    //log_file_name3 = base3 + "_training.txt";
+  // if(use_dqn){ // only testing loops for DQN
+  //   torch::save(policyNet, model_name);
+  //   h_log("debug-10\n");
 
-/*
-    output_file0.open(log_file_name0);
-    output_file1.open(log_file_name1);
-    output_file2.open(log_file_name2);
-    output_file3.open(log_file_name3);
+  //   int training_ttis = networkEnv->TTIcounter;
 
-    output_file0 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
-    output_file1 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
-    output_file2 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
-    output_file3 << "TTIcounter" << ", Reward" << ", InferenceTime" << std::endl;
-*/
-    int training_ttis = networkEnv->TTIcounter;
+  //   while(1){ // testing loop
+  //     torch::Tensor state = networkEnv->CurrentState(true); 
+  //     networkEnv->TTI_increment();
 
-    while(1){ // testing loop
-      torch::Tensor state = networkEnv->CurrentState(true); 
-      networkEnv->TTI_increment();
+  //   	// select action explore/exploit
+  //     torch::Tensor action = agent->exploit(state.to(device), policyNet, true);
 
-    	// select action explore/exploit
-      torch::Tensor action = agent->exploit(state.to(device), policyNet, true);
+  //     //SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
+  //     SendScheduler(&sh_fd, action[0][0].item<int>(), action[0][1].item<int>(), action[0][2].item<int>(), action[0][3].item<int>());
+  //     h_log("debug-11\n");
+  //     // observe new state
+  //     update     = FetchState(&st_fd); 
+  //     cqi_update = FetchCQIs(&cqi_fd);
+  //     // check if end of simulation
+  //     if(strcmp(update.c_str(), "end") == 0){
+  //       std::cout << "END signal received!" << std::endl;
+  //       break;
+  //     }
+  //     networkEnv->UpdateNetworkState(update); // process new state
+  //     networkEnv->ProcessCQIs(cqi_update); // process cqis
 
-    	// execute action
-      //HH
-      //printf(" parameter: %d / %d / %d / %d\n", action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
+  //     torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
+  //     reward_copy = reward[0].item<float>();
 
-      //SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
-      SendScheduler(&sh_fd, action[0][0].item<int>(), action[0][1].item<int>(), action[0][2].item<int>(), action[0][3].item<int>());
-      h_log("debug-11\n");
-      // observe new state
-      update     = FetchState(&st_fd); 
-      cqi_update = FetchCQIs(&cqi_fd);
-      // check if end of simulation
-      if(strcmp(update.c_str(), "end") == 0){
-        std::cout << "END signal received!" << std::endl;
-        break;
-      }
-      networkEnv->UpdateNetworkState(update); // process new state
-      networkEnv->ProcessCQIs(cqi_update); // process cqis
+  //     h_log("debug-12\n");
+  //     if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
+  //   } // testing loop
 
-      //torch::Tensor next_state  = networkEnv->CurrentState(false); // HH ADDED 0
+  //   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
 
-      torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
-      reward_copy = reward[0].item<float>();
-
-/*
-      output_file0 << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
-      output_file1 << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
-      output_file2 << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
-      output_file3 << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
-*/
-h_log("debug-12\n");
-      if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
-    } // testing loop
-
-    /*
-    output_file0.close();
-    output_file1.close();
-    output_file2.close();
-    output_file3.close();
-    */
-
-    networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
-
-  } // only dqn should test loop
+  // } // only dqn should test loop
 
   close(sh_fd);
   close(st_fd);
