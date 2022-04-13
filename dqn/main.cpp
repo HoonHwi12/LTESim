@@ -77,6 +77,9 @@ int main(int argc, char** argv) {
   }
 	// Decide CPU or GPU
 	torch::Device device = torch::kCPU;
+  
+  std::cout << "CUDA available: " << torch::cuda::is_available() << std::endl;
+
 	std::cout << "CUDA DEVICE COUNT: " << torch::cuda::device_count() << std::endl;
 	if (torch::cuda::is_available()) {
     	std::cout << "CUDA available - working on GPU." << std::endl;
@@ -252,12 +255,12 @@ int main(int argc, char** argv) {
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
-   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);  // HH DELETE 0
+   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
    output_file.close();
 
   if(use_dqn){ // only testing loops for DQN
     torch::save(policyNet, model_name);
-     log_file_name = base + "_testing.txt"; //HH DELETE 1
+     log_file_name = base + "_testing.txt";
      output_file.open(log_file_name);
     int training_ttis = networkEnv->TTIcounter;
 
@@ -281,11 +284,9 @@ int main(int argc, char** argv) {
       networkEnv->UpdateNetworkState(update); // process new state
       networkEnv->ProcessCQIs(cqi_update); // process cqis
 
-      //torch::Tensor next_state  = networkEnv->CurrentState(false); // HH ADDED 1
-
       torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
       reward_copy = reward[0].item<float>();
-      output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl; //HH DELETE2
+      output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
       if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
     } // testing loop
     output_file.close();
