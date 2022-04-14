@@ -60,8 +60,7 @@
 #include <stdlib.h>
 #include <cstring>
 
-int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
 
   if (argc > 1)

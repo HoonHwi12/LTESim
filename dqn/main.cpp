@@ -15,6 +15,11 @@ TORCH_MODULE(DQN); // shared ownership
 #include <iostream>
 #include <cstdlib>
 
+
+#include <sys/shm.h>
+
+
+
 #define STATE_FIFO "../../state_fifo"
 #define SCHED_FIFO "../../sched_fifo"
 #define CQI_FIFO   "../../cqi_fifo"
@@ -62,6 +67,60 @@ std::chrono::nanoseconds duration;
 int main(int argc, char** argv) {
 	int constant_scheduler = 0;
   bool use_dqn = true;
+
+
+
+/* HH SH mem
+	const int  KEY_NUM =  1234;
+	const int  MEM_SIZE = 4096;
+	int shmid;
+  int type;
+
+  char buffer[MEM_SIZE] = {0,};
+
+  void *shmaddr;
+  
+  if((shmid = shmget((key_t)KEY_NUM, 0, 0)) == -1)
+  {
+      perror("Shmid key failed");
+  }
+
+  while(1)
+  {
+
+    // attach shmid
+    if((shmaddr = shmat(shmid, (void *)0, 0)) == (void *)-1)
+    {
+      perror("Shmat shmid failed");
+    }
+
+    // read
+    memcpy(&buffer, (char *)shmaddr, sizeof(&buffer));
+  
+    // detach shmaddr
+    if(shmdt(shmaddr) == -1)
+    {
+      perror("Shmdt shmaddr failed");
+    }
+    if(buffer[0] == 1)
+    {
+        type = atoi(buffer);
+        std::cout << "Receive data from shared memory!: " << buffer[0] << std::endl;
+        printf("%s / %d\n", buffer, type);
+        break;
+    }    
+    else
+    {
+      std::cout << "buf: " << buffer << std::endl;
+      sleep(1);
+    }
+  }
+sleep(30);
+*/
+
+
+
+
   // file naming
   std::string scheduler_string;
 

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <torch/torch.h>
 
+
 template <typename T, typename R>
 class Agent{
 	private:
