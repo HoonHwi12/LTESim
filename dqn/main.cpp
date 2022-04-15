@@ -313,9 +313,29 @@ int main(int argc, char** argv) {
       } 
       networkEnv->UpdateNetworkState(update); // process new state
       networkEnv->ProcessCQIs(cqi_update); // process cqis
+      torch::Tensor next_state  = networkEnv->CurrentState(false);
 
       torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
       reward_copy = reward[0].item<float>();
+
+      // by HH: REPLAY, OPTIMIZE
+      exp->push(state.to(torch::kCPU), action.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
+      samples = exp->sampleMemory(BATCH_SIZE); 
+      experience batch = processSamples(samples);
+      // work out the qs
+      current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
+      next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+      // bellman equation
+      target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
+      // loss and backprop
+      torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
+      printf("loss  %f \n", loss.item().toFloat());
+      loss.set_requires_grad(true);
+      optimizer.zero_grad();
+      loss.backward();
+      optimizer.step();
+
+
       output_file << networkEnv->TTIcounter << ", " << reward_copy << ", "<< agent->inferenceTime().count() << std::endl;
       if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
     } // testing loop
