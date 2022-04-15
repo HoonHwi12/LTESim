@@ -15,10 +15,7 @@ TORCH_MODULE(DQN); // shared ownership
 #include <iostream>
 #include <cstdlib>
 
-
-#include <sys/shm.h>
-
-
+#include "../src/shared-memory.h"
 
 #define STATE_FIFO "../../state_fifo"
 #define SCHED_FIFO "../../sched_fifo"
@@ -69,55 +66,29 @@ int main(int argc, char** argv) {
   bool use_dqn = true;
 
 
-
-/* HH SH mem
-	const int  KEY_NUM =  1234;
-	const int  MEM_SIZE = 4096;
-	int shmid;
-  int type;
-
+  /*
+  // HH shared
   char buffer[MEM_SIZE] = {0,};
-
-  void *shmaddr;
-  
-  if((shmid = shmget((key_t)KEY_NUM, 0, 0)) == -1)
-  {
-      perror("Shmid key failed");
-  }
+  SharedMemoryInit();
 
   while(1)
   {
 
-    // attach shmid
-    if((shmaddr = shmat(shmid, (void *)0, 0)) == (void *)-1)
-    {
-      perror("Shmat shmid failed");
-    }
-
-    // read
-    memcpy(&buffer, (char *)shmaddr, sizeof(&buffer));
-  
-    // detach shmaddr
-    if(shmdt(shmaddr) == -1)
-    {
-      perror("Shmdt shmaddr failed");
-    }
+    SharedMemoryRead(buffer);
     if(buffer[0] == 1)
     {
-        type = atoi(buffer);
+        buffer_type = atoi(buffer);
         std::cout << "Receive data from shared memory!: " << buffer[0] << std::endl;
-        printf("%s / %d\n", buffer, type);
+        printf("%s / %d\n", buffer, buffer_type);
         break;
     }    
     else
     {
-      std::cout << "buf: " << buffer << std::endl;
-      sleep(1);
+        std::cout << "buf: " << buffer << std::endl;
+        sleep(1);
     }
   }
-sleep(30);
-*/
-
+  */
 
 
 

@@ -49,10 +49,7 @@
 #include <cstring>
 #include <iostream>
 
-
-#include <unistd.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
+#include "../shared-memory.h"
 
 static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
                                         int nbUE,
@@ -778,72 +775,17 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
 	}
 
 
+	/*
+	// HH shared
+  	char *buffer;
+	  buffer = "5";
+    
+    SharedMemoryCreate();
+    sleep(5);
+    
+    SharedMemoryWrite(buffer);
+	*/
 
-
-/* HH SH mem
-  const int  KEY_NUM =  1234;
-  const int  MEM_SIZE = 4096;
-  int shmid;
-  //char buffer[MEM_SIZE] = {1,};
-  char *buffer;
-  //string test_word = "3";
-  //string buffer="";
-
-	// create shared memory // IPC_EXCL=>fail if exist
-  if((shmid = shmget((key_t)KEY_NUM, MEM_SIZE, IPC_CREAT| IPC_EXCL | 0666)) == -1)
-  {
-    printf("There was shared memory.");
-
-	// if fail to create shared memory 
-    shmid = shmget((key_t)KEY_NUM, MEM_SIZE, IPC_CREAT| 0666);
-    if(shmid == -1)
-    {
-        perror("Shared memory create fail");
-    }
-	else
-	{
-		// delete shared memory
-		if(shmctl(shmid, IPC_RMID, 0) == -1) 
-		{
-			perror("Shmctl failed");
-		}
-		printf("Shared memory end\n");
-
-		// create shared memory
-		shmid = shmget((key_t)KEY_NUM, MEM_SIZE, IPC_CREAT| 0666);
-		
-		if(shmid == -1)
-		{
-			perror("Shared memory create fail");
-		}
-	}
-  }
-
-  sleep(3);
-
-  void *shmaddr;
-  if(sizeof(buffer) > MEM_SIZE)
-  {
-      printf("Shared memory size over");
-  }
-  
-  // attach shmid
-  if((shmaddr = shmat(shmid, (void *)0, 0)) == (void *)-1) 
-  {
-      perror("Shmat failed");
-  }
-  buffer = "3";
-  // buffer to shmaddr
-  printf("size(%d) write buffer: %d\n", sizeof(buffer), atoi(buffer));
-  memcpy((char *)shmaddr, buffer, sizeof(buffer));
-  
-  // detach shmaddr
-  if(shmdt(shmaddr) == -1) 
-  {
-      perror("Shmdt failed");
-  }
-  printf("write success\n");
-*/
 
 
 

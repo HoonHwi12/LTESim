@@ -149,6 +149,7 @@ src/LTE-Sim.d: ../src/LTE-Sim.cpp ../src/TEST/test.h \
  ../src/scenarios/single-cell-with-streets.h \
  ../src/scenarios/multi-cell-sinrplot.h \
  ../src/scenarios/single-cell-with-interference-mixed-apps.h \
+ ../src/scenarios/../shared-memory.h \
  ../src/TEST/scalability-test-macro-with-femto.h \
  ../src/TEST/../utility/UsersDistribution.h \
  ../src/TEST/../utility/IndoorScenarios.h \
@@ -482,6 +483,8 @@ src/LTE-Sim.d: ../src/LTE-Sim.cpp ../src/TEST/test.h \
 ../src/scenarios/multi-cell-sinrplot.h:
 
 ../src/scenarios/single-cell-with-interference-mixed-apps.h:
+
+../src/scenarios/../shared-memory.h:
 
 ../src/TEST/scalability-test-macro-with-femto.h:
 
