@@ -237,42 +237,45 @@ int main(int argc, char** argv) {
       //start = std::chrono::steady_clock::now(); //training time logging
       clock_t infstart=clock();
 
-      // if(use_dqn) // if we are using dqn
-      // { 
-      // if enough samples
-      if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
-        update_counter++;
-        // access learning rate
-        auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
-        options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-        h_log("debug1\n");
-        //sample random batch and process
-        samples = exp->sampleMemory(BATCH_SIZE); 
-        experience batch = processSamples(samples);
-    
-        // work out the qs
-        current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-        h_log("debug2\n");
-        next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
-        // bellman equation
-        target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
-        // loss and backprop
-        torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-        printf("loss %f\n", loss.item().toFloat());
+      if( (int)networkEnv->TTIcounter %10 ==0)
+      {
+        // if(use_dqn) // if we are using dqn
+        // { 
+        // if enough samples
+        if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
+          update_counter++;
+          // access learning rate
+          auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
+          options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
+          h_log("debug1\n");
+          //sample random batch and process
+          samples = exp->sampleMemory(BATCH_SIZE); 
+          experience batch = processSamples(samples);
+      
+          // work out the qs
+          current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
+          h_log("debug2\n");
+          next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+          // bellman equation
+          target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
+          // loss and backprop
+          torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
+          printf("loss %f\n", loss.item().toFloat());
 
-        loss.set_requires_grad(true);
-        optimizer.zero_grad();
-        loss.backward();
-        optimizer.step();
-        h_log("debug3\n");
+          loss.set_requires_grad(true);
+          optimizer.zero_grad();
+          loss.backward();
+          optimizer.step();
+          h_log("debug3\n");
 
-        // update targetNet with policyNey parameters
-        if(update_counter > NET_UPDATE){
-          // copy weights to targetnet
-          loadStateDict(policyNet, targetNet);
-          update_counter = 0;
-        }
-      } // enough samples
+          // update targetNet with policyNey parameters
+          if(update_counter > NET_UPDATE){
+            // copy weights to targetnet
+            loadStateDict(policyNet, targetNet);
+            update_counter = 0;
+          }
+        } // enough samples
+      }
 
       // training time logging
       //end = std::chrono::steady_clock::now();

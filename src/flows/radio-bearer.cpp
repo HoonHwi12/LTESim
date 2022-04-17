@@ -218,6 +218,8 @@ RadioBearer::CreatePacket (int bytes)
 	   if (bytes > 1490) bytes = 1490;
 	   else bytes = bytes - 13;
 
+    tti_packet_size += bytes;
+
        std::cout << " ID " << p->GetID ()
 	 		    << " B " << GetRlcEntity ()->GetRlcEntityIndex ()
 	 			<< " SIZE " << bytes

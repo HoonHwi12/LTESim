@@ -399,6 +399,8 @@ Application::Trace (Packet* p)
         }
     }
 
+  tti_packet_size += p->GetSize ();
+
   if (GetDestination ()->GetNodeType() == NetworkNode::TYPE_UE)
     {
       UserEquipment* ue = (UserEquipment*) GetDestination ();
