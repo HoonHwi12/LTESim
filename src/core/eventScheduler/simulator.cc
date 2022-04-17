@@ -59,6 +59,9 @@
 #include <unistd.h>
 #include <cstdlib>
 
+// by HH
+#include "../../../src/shared-memory.h"
+
 Simulator* Simulator::ptr=NULL;
 
 #define STATE_FIFO "state_fifo"
@@ -500,6 +503,7 @@ Simulator::Run ()
     lstm_packet_size[packet_index] = tti_packet_size;
     if(packet_index == 9)
     {
+      printf("waiting for LSTM\n");
       for(int index=0; index < 9; index++)
       {
         //send signal to LSTM
@@ -510,27 +514,27 @@ Simulator::Run ()
         lte_shmid = SharedMemoryInit(LTE_KEY);
         sprintf(shared_buffer, "%d", lstm_packet_size[index]);
         SharedMemoryWrite(lte_shmid, shared_buffer);
-        printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
+        //printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
 
         //check receive
-        printf("waiting for LSTM receive data\n");
+        //printf("waiting for LSTM receive data\n");
         while(1)
         {
           SharedMemoryRead(lstm_shmid, lstm_buffer);
           buffer_value = atoi(lstm_buffer);
           if(buffer_value == -1)
           {
-            printf("LSTM receive data\n");
+            //printf("LSTM receive data\n");
             break;
           }
           //sleep(0.001);
         }
       }
 
-      // LSTM에 complete 신호 전송
-      sprintf(shared_buffer, "%d", -1);
-      SharedMemoryWrite(lte_shmid, shared_buffer);
-      printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
+      // // LSTM에 complete 신호 전송
+      // sprintf(shared_buffer, "%d", -1);
+      // SharedMemoryWrite(lte_shmid, shared_buffer);
+      // printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
     }
 
 

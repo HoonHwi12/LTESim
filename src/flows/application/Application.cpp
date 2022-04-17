@@ -34,6 +34,9 @@
 #include "../../device/ENodeB.h"
 #include "../../load-parameters.h"
 
+// by HH
+#include "../../../src/shared-memory.h"
+
 Application::Application()
 {
   m_classifierParameters = NULL;

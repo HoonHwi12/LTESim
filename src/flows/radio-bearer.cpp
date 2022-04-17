@@ -38,6 +38,9 @@
 #include "../protocolStack/rlc/amd-record.h"
 #include "../load-parameters.h"
 
+// by HH
+#include "../../src/shared-memory.h"
+
 RadioBearer::RadioBearer()
 {
   m_macQueue = new MacQueue ();

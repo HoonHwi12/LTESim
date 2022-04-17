@@ -27,6 +27,9 @@
 #include "../../load-parameters.h"
 #include "../../device/UserEquipment.h"
 
+// by HH
+#include "../../../src/shared-memory.h"
+
 ApplicationSink::ApplicationSink()
 {
   m_classifierParameters = NULL;
@@ -124,6 +127,8 @@ ApplicationSink::Receive (Packet* p)
   if (delay < 0.000001) delay = 0.000001;
 
   UserEquipment* ue = (UserEquipment*) GetSourceApplication ()->GetDestination ();
+
+  tti_packet_size += p->GetPacketTags()->GetApplicationSize();
 
   std::cout << " ID " << p->GetID ()
                         << " B " << m_sourceApplication->GetApplicationID ()

@@ -77,8 +77,23 @@ int main(int argc, char** argv) {
   // file naming
   std::string scheduler_string;
 
-  // test time
+  // by HH test time
   clock_t test_start = clock();
+  int dqn_shmid = SharedMemoryCreate(DQN_KEY);
+  if(dqn_shmid == -1)
+  {
+    printf("Shared Memory Create Error\n");
+    return FAIL;
+  }
+  // LSTM에 ready 신호 전송
+  char *dqn_buffer = (char*)malloc(SHARED_SIZE);
+  sprintf(dqn_buffer,"%d", -1);
+  if( SharedMemoryWrite(dqn_shmid, dqn_buffer) == -1)
+  {
+    printf("Shared Memory Write Error\n");
+    return FAIL;
+  }
+
 
 	if(argc > 1 ){
 

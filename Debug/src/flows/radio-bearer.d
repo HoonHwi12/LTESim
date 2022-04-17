@@ -66,7 +66,7 @@ src/flows/radio-bearer.d: ../src/flows/radio-bearer.cpp \
  ../src/flows/../protocolStack/rlc/am-rlc-entity.h \
  ../src/flows/../protocolStack/rlc/am-state-variables.h \
  ../src/flows/../protocolStack/rlc/amd-record.h \
- ../src/flows/../load-parameters.h
+ ../src/flows/../load-parameters.h ../src/flows/../../src/shared-memory.h
 
 ../src/flows/radio-bearer.h:
 
@@ -205,3 +205,5 @@ src/flows/radio-bearer.d: ../src/flows/radio-bearer.cpp \
 ../src/flows/../protocolStack/rlc/amd-record.h:
 
 ../src/flows/../load-parameters.h:
+
+../src/flows/../../src/shared-memory.h:

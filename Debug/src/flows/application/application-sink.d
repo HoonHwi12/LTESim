@@ -51,7 +51,8 @@ src/flows/application/application-sink.d: \
  ../src/flows/application/../../componentManagers/NetworkManager.h \
  ../src/flows/application/../../componentManagers/../networkTopology/Cell.h \
  ../src/flows/application/../../device/UserEquipment.h \
- ../src/flows/application/../../device/NetworkNode.h
+ ../src/flows/application/../../device/NetworkNode.h \
+ ../src/flows/application/../../../src/shared-memory.h
 
 ../src/flows/application/application-sink.h:
 
@@ -156,3 +157,5 @@ src/flows/application/application-sink.d: \
 ../src/flows/application/../../device/UserEquipment.h:
 
 ../src/flows/application/../../device/NetworkNode.h:
+
+../src/flows/application/../../../src/shared-memory.h:
