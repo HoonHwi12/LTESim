@@ -322,20 +322,11 @@ int main(int argc, char** argv){
 			while(1)
 			{
 				// LTE-Sim 에서 TTI 데이터 받을때까지 대기
-				while(1)
+				do
 				{
-					if( SharedMemoryRead(lstm_shmid, lstm_buffer) == -1 )
-					{
-						printf("Shared Memory Read Error\n");
-						return FAIL;
-					}
+					SharedMemoryRead(lstm_shmid, lstm_buffer);
 					LTE_TTI = atoi(lstm_buffer);
-					if(LTE_TTI != -1)
-					{
-						break;
-					}
-					//sleep(0.0001);
-				}
+				}while( LTE_TTI == -1 );
 
 				// Receive Packet Size
 				if( SharedMemoryRead(lte_shmid, lte_buffer) == -1 )

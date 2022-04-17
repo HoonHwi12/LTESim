@@ -504,31 +504,23 @@ Simulator::Run ()
     if(packet_index == 9)
     {
       printf("waiting for LSTM\n");
-      for(int index=0; index < 9; index++)
+      for(int index=0; index < 10; index++)
       {
         //send signal to LSTM
         sprintf(shared_buffer, "%d", tti_tr2);
         SharedMemoryWrite(lstm_shmid, shared_buffer);
 
         // send SIZE to LSTM
-        lte_shmid = SharedMemoryInit(LTE_KEY);
         sprintf(shared_buffer, "%d", lstm_packet_size[index]);
         SharedMemoryWrite(lte_shmid, shared_buffer);
         //printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
 
         //check receive
         //printf("waiting for LSTM receive data\n");
-        while(1)
-        {
+        do{
           SharedMemoryRead(lstm_shmid, lstm_buffer);
           buffer_value = atoi(lstm_buffer);
-          if(buffer_value == -1)
-          {
-            //printf("LSTM receive data\n");
-            break;
-          }
-          //sleep(0.001);
-        }
+        }while( buffer_value != -1);
       }
 
       // // LSTM에 complete 신호 전송
