@@ -15,7 +15,6 @@ TORCH_MODULE(DQN); // shared ownership
 #include <iostream>
 #include <cstdlib>
 
-#include "../src/shared-memory.h"
 
 #define STATE_FIFO "../../state_fifo"
 #define SCHED_FIFO "../../sched_fifo"
@@ -65,31 +64,21 @@ int main(int argc, char** argv) {
 	int constant_scheduler = 0;
   bool use_dqn = true;
 
-
-  /*
-  // HH shared
-  char buffer[MEM_SIZE] = {0,};
-  SharedMemoryInit();
-
-  while(1)
+  // by HH
+  int dqn_shmid = SharedMemoryCreate(DQN_KEY);
+  if(dqn_shmid == -1)
   {
-
-    SharedMemoryRead(buffer);
-    if(buffer[0] == 1)
-    {
-        buffer_type = atoi(buffer);
-        std::cout << "Receive data from shared memory!: " << buffer[0] << std::endl;
-        printf("%s / %d\n", buffer, buffer_type);
-        break;
-    }    
-    else
-    {
-        std::cout << "buf: " << buffer << std::endl;
-        sleep(1);
-    }
+    printf("Shared Memory Create Error\n");
+    return FAIL;
   }
-  */
-
+  // LSTM에 ready 신호 전송
+  char *dqn_buffer = (char*)malloc(SHARED_SIZE);
+  sprintf(dqn_buffer,"%d", -1);
+  if( SharedMemoryWrite(dqn_shmid, dqn_buffer) == -1)
+  {
+    printf("Shared Memory Write Error\n");
+    return FAIL;
+  }
 
 
   // file naming
@@ -180,9 +169,11 @@ int main(int argc, char** argv) {
     TRAIN_TTI += TEST_TTI;
   }
 
+
+
   while(1){ // training loop
-  	torch::Tensor state = networkEnv->CurrentState(true);
-  	networkEnv->TTI_increment();
+    state = networkEnv->CurrentState(true);
+    networkEnv->TTI_increment();
 
   	// selecting an action
     torch::Tensor action = torch::zeros(2);
@@ -203,48 +194,53 @@ int main(int argc, char** argv) {
       break;
   	}
     update_counter++;
+
     // process new state + cqis
     networkEnv->UpdateNetworkState(update); 
     networkEnv->ProcessCQIs(cqi_update);
+    torch::Tensor reward = networkEnv->CalculateReward(); 
+
     // next state and reward
     torch::Tensor next_state  = networkEnv->CurrentState(false);
-    torch::Tensor reward = networkEnv->CalculateReward(); 
+    
     reward_copy = reward[0].item<float>();
     // store experiece in replay memory
     exp->push(state.to(torch::kCPU), action.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
 
     start = std::chrono::steady_clock::now(); //training time logging
     clock_t infstart = clock();
-    if(use_dqn){ // if we are using dqn
-    	// if enough samples
-	    if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
-        update_counter++;
-        // access learning rate
-        auto options = static_cast<torch::optim::SGDOptions&> (optimizer.defaults());
-	   		options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-	    	//sample random batch and process
-	    	samples = exp->sampleMemory(BATCH_SIZE); 
-        experience batch = processSamples(samples);
-        // work out the qs
-        current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-	      next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
-        // bellman equation
-        target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
-        // loss and backprop
-        torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
-        printf("loss  %f \n", loss.item().toFloat());
-        loss.set_requires_grad(true);
-        optimizer.zero_grad();
-        loss.backward();
-        optimizer.step();
-        // update targetNet with policyNey parameters
-        if(update_counter > NET_UPDATE){
-	        // copy weights to targetnet
-	        loadStateDict(policyNet, targetNet); 
-	        update_counter = 0;
-        }
-	    } // enough samples
-    }// fixed scheduler
+    if( (int)networkEnv->TTIcounter %10 ==0)
+    {
+      if(use_dqn){ // if we are using dqn
+        // if enough samples
+        if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
+          // access learning rate
+          auto options = static_cast<torch::optim::SGDOptions&> (optimizer.defaults());
+          options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
+          //sample random batch and process
+          samples = exp->sampleMemory(BATCH_SIZE); 
+          experience batch = processSamples(samples);
+          // work out the qs
+          current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
+          next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+          // bellman equation
+          target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
+          // loss and backprop
+          torch::Tensor loss = (torch::mse_loss(current_q_values.to(device), target_q_values.to(device))).to(device);
+          printf("loss  %f \n", loss.item().toFloat());
+          loss.set_requires_grad(true);
+          optimizer.zero_grad();
+          loss.backward();
+          optimizer.step();
+          // update targetNet with policyNey parameters
+          if(update_counter > NET_UPDATE){
+            // copy weights to targetnet
+            loadStateDict(policyNet, targetNet); 
+            update_counter = 0;
+          }
+        } // enough samples
+      }// fixed scheduler
+    }
 
     // training time logging
     end = std::chrono::steady_clock::now();

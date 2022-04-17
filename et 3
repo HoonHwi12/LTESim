@@ -1,0 +1,113 @@
+[33mcommit ef3855a2c27f7581f1fb6385fe1026bd588819d8[m[33m ([m[1;36mHEAD -> [m[1;32mLTE_LSTM[m[33m)[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sun Apr 17 10:39:06 2022 +0000
+
+    as
+
+[33mcommit 2755ac5bc98ff66af1e4ff2183b38fc1ce72d5b6[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sun Apr 17 10:29:39 2022 +0000
+
+    LSTM
+
+[33mcommit 20dc3236d243ef2b7a0169357654445ecf7845c1[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sun Apr 17 09:41:45 2022 +0000
+
+    LSTM_oldDQN_version
+
+[33mcommit f440bd5edee09f71f6d6a30e54c7a332bb763ad3[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sat Apr 16 13:13:17 2022 +0000
+
+    combined LTE-Sim
+
+[33mcommit 16cb67e4a8f304f68fa5f69e80234eebbeda4b6f[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sat Apr 16 11:47:30 2022 +0000
+
+    LSTM pipe Added
+
+[33mcommit a8758240b3fd20d65ec71aeca682217af1f26fc4[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Fri Apr 15 17:35:17 2022 +0000
+
+    LSTM commit
+
+[33mcommit 67a74a5f2210b69528a066b602f0731b1a3972cc[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Fri Apr 15 17:30:58 2022 +0000
+
+    LSTM commit
+
+[33mcommit c880e5101277eb75faee9edfed020d8eaf9bedc1[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Fri Apr 15 15:27:59 2022 +0000
+
+    Add TESTING REPLAY MEM
+
+[33mcommit 7928d7a9c45212c85e5721fbbdfaa903e8aab2d1[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Fri Apr 15 03:58:15 2022 +0000
+
+    shared memory to function
+
+[33mcommit 7c0b52a01a9c9113d2a7fed436a09e88a7019278[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Thu Apr 14 15:41:37 2022 +0000
+
+    add shared memory
+
+[33mcommit a471622e7f5b02f9b9b068f52e2f9858594a2c4e[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Wed Apr 13 08:20:43 2022 +0000
+
+    stable
+
+[33mcommit c22bdb9d0b6ac1dda9fcd0f7d4207b9c899ae396[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Wed Apr 13 08:20:05 2022 +0000
+
+    stable
+
+[33mcommit c50798357d25795a86df3632f3d8f1ef3e2e4d89[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Tue Apr 12 09:16:42 2022 +0000
+
+    release v1.3 - stable version
+
+[33mcommit 6c46f9c8a48eafafae24be0105c2fd4d751b01d6[m
+Author: hoonhwi <hoonhwi.lee@yonsei.ac.kr>
+Date:   Mon Apr 11 10:36:45 2022 +0000
+
+    minor bug fix
+
+[33mcommit ba5d9023a54605e3fed33b36ca874a782eb5d792[m
+Author: hoon <hoonhwi.lee@yonsei.ac.kr>
+Date:   Mon Apr 11 04:51:58 2022 +0000
+
+    release-v1.0-replay mem fix
+
+[33mcommit 9c181bb7860f54de66b405a6ba320612a99cfc7c[m
+Author: hoon <hoonhwi.lee@yonsei.ac.kr>
+Date:   Mon Apr 11 04:09:28 2022 +0000
+
+    release v1.0
+
+[33mcommit 3281912ec73ac67895bf481e13bddf58ae5f821e[m
+Author: hoon <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sat Apr 9 15:29:18 2022 +0000
+
+    reward bug FIX (realplr -> realdelay)
+
+[33mcommit 1a1f082abbab5cdd077da7a76be4c45dd2abad13[m
+Author: hoon <hoonhwi.lee@yonsei.ac.kr>
+Date:   Sat Apr 9 15:15:58 2022 +0000
+
+    SingleCellWithIMixed BEcount BUG fix
+
+[33mcommit ad05299149aa732f4d064f67e737dda4046b36a9[m
+Author: hoon <hoonhwi.lee@yonsei.ac.kr>
+Date:   Fri Apr 8 08:40:17 2022 +0000
+
+    upload

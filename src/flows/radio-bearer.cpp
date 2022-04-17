@@ -38,6 +38,17 @@
 #include "../protocolStack/rlc/amd-record.h"
 #include "../load-parameters.h"
 
+// by HH
+#include "../../src/shared-memory.h"
+// extern u_int64_t lstm_packet_size;
+// extern int shmid;
+// extern int SharedMemoryInit();
+// extern int SharedMemoryCreate();
+// extern int SharedMemoryRead(char *buffer);
+// extern int SharedMemoryWrite(char *buffer);
+// extern int SharedMemoryFree();
+
+
 RadioBearer::RadioBearer()
 {
   m_macQueue = new MacQueue ();
@@ -217,6 +228,8 @@ RadioBearer::CreatePacket (int bytes)
 
 	   if (bytes > 1490) bytes = 1490;
 	   else bytes = bytes - 13;
+
+     tti_packet_size += bytes;
 
        std::cout << " ID " << p->GetID ()
 	 		    << " B " << GetRlcEntity ()->GetRlcEntityIndex ()

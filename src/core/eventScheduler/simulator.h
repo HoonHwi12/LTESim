@@ -35,7 +35,6 @@
 #include <iostream>
 #include <vector>
 
-
 /*
  * Simulator
  * Control the scheduling of simulation events.

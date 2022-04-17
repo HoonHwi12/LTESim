@@ -59,7 +59,8 @@ src/flows/application/Application.d: \
  ../src/flows/application/../../channel/LteChannel.h \
  ../src/flows/application/../../device/UserEquipment.h \
  ../src/flows/application/../../device/NetworkNode.h \
- ../src/flows/application/../../device/ENodeB.h
+ ../src/flows/application/../../device/ENodeB.h \
+ ../src/flows/application/../../../src/shared-memory.h
 
 ../src/flows/application/Application.h:
 
@@ -180,3 +181,5 @@ src/flows/application/Application.d: \
 ../src/flows/application/../../device/NetworkNode.h:
 
 ../src/flows/application/../../device/ENodeB.h:
+
+../src/flows/application/../../../src/shared-memory.h:

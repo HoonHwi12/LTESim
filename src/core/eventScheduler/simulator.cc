@@ -57,6 +57,10 @@
 #include <unistd.h>
 #include <cstdlib>
 
+// by HH
+#include "../../../src/shared-memory.h"
+
+
 Simulator* Simulator::ptr=NULL;
 
 #define STATE_FIFO "state_fifo"
@@ -362,6 +366,20 @@ Simulator::Run ()
   ConnectStateFifo(&st_fd);
   // form information about each eNB's UE's application QoS and send!
   SendUESummary(&st_fd);
+
+  // connect shared memory
+  
+	// by HH
+  char *shared_buffer = (char*)malloc(SHARED_SIZE);
+  char *lstm_buffer = (char*)malloc(SHARED_SIZE);
+
+  int lte_shmid = SharedMemoryCreate(LTE_KEY);
+  int lstm_shmid;
+
+  int packet_index;
+  int buffer_value=0;
+
+
   // tti trackers
   unsigned long tti_tr1, tti_tr2;
   // buffer contains the simulation output for the last TTI
@@ -398,6 +416,32 @@ Simulator::Run ()
 
   // continue with remainder
   m_stop = false;
+  //u_int64_t lstm_packet_size = 0;
+
+
+
+
+
+
+  printf("waiting for LSTM\n");
+
+  // LSTM에서 -1 보낼때까지 대기
+  while(buffer_value != -1)
+  {     
+    lstm_shmid = SharedMemoryInit(LSTM_KEY);  
+    if(lstm_shmid != -1)
+    {
+      SharedMemoryRead(lstm_shmid, lstm_buffer);
+      buffer_value = atoi(lstm_buffer);
+    }
+    sleep(0.001);
+  } 
+  buffer.str("");
+
+
+
+
+
   while (!m_calendar->IsEmpty () && !m_stop){
     // fetch the new scheduler
     scheduler = FetchScheduler(&sh_fd);
@@ -411,11 +455,57 @@ Simulator::Run ()
     tti_tr1 = tti_tr2;
     
     printf("\nLTESIM: TTI Change! Now in TTI # %d.\n", tti_tr2);
+
     // append onto big buffer
     bigbuf = bigbuf + buffer.str();
+    //printf("bigbuf: %s\n", bigbuf.c_str() );
+
     // send the last TTI
     SendState(&st_fd, buffer.str().c_str());
     SendCQISummary(&cqi_fd);
+
+
+
+    // Send packet size to LSTM every 10 TTI
+    packet_index = tti_tr2 %10;
+    lstm_packet_size[packet_index] = tti_packet_size;
+    if(packet_index == 9)
+    {
+      for(int index=0; index < 9; index++)
+      {
+        //send signal to LSTM
+        sprintf(shared_buffer, "%d", tti_tr2);
+        SharedMemoryWrite(lstm_shmid, shared_buffer);
+
+        // send SIZE to LSTM
+        lte_shmid = SharedMemoryInit(LTE_KEY);
+        sprintf(shared_buffer, "%d", lstm_packet_size[index]);
+        SharedMemoryWrite(lte_shmid, shared_buffer);
+        printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
+
+        //check receive
+        printf("waiting for LSTM receive data\n");
+        while(1)
+        {
+          SharedMemoryRead(lstm_shmid, lstm_buffer);
+          buffer_value = atoi(lstm_buffer);
+          if(buffer_value == -1)
+          {
+            printf("LSTM receive data\n");
+            break;
+          }
+          //sleep(0.001);
+        }
+      }
+
+      // LSTM에 complete 신호 전송
+      sprintf(shared_buffer, "%d", -1);
+      SharedMemoryWrite(lte_shmid, shared_buffer);
+      printf("Write %s to lte_shmid/ size:%d\n", shared_buffer, sizeof(shared_buffer));
+    }
+
+
+
     printf("LTESIM: Waiting for new Scheduler. \n");
     // clear stream and output capture
     buffer.str("");

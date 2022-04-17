@@ -72,7 +72,8 @@ src/core/eventScheduler/simulator.d: \
  ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/exp-rule-downlink-packet-scheduler.h \
  ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/log-rule-downlink-packet-scheduler.h \
  ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/enhanced-uplink-packet-scheduler.h \
- ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.h
+ ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.h \
+ ../src/core/eventScheduler/../../../src/shared-memory.h
 
 ../src/core/eventScheduler/simulator.h:
 
@@ -221,3 +222,5 @@ src/core/eventScheduler/simulator.d: \
 ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/enhanced-uplink-packet-scheduler.h:
 
 ../src/core/eventScheduler/../../protocolStack/mac/packet-scheduler/roundrobin-uplink-packet-scheduler.h:
+
+../src/core/eventScheduler/../../../src/shared-memory.h:

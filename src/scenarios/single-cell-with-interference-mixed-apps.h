@@ -49,8 +49,6 @@
 #include <cstring>
 #include <iostream>
 
-#include "../shared-memory.h"
-
 static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
                                         int nbUE,
                                         int nbVideo, int nbCBR, int nbBE, int nbVoIP,
@@ -773,23 +771,6 @@ static void SingleCellWithInterferenceMixedApps (int nbCells, double radius,
 		cbrApplication++;
 		idUE++;
 	}
-
-
-	/*
-	// HH shared
-  	char *buffer;
-	  buffer = "5";
-    
-    SharedMemoryCreate();
-    sleep(5);
-    
-    SharedMemoryWrite(buffer);
-	*/
-
-
-
-
-
 
 	simulator->SetStop(duration);
 	// main loop.

@@ -30,6 +30,8 @@
 # build files
 dqn/build
 dqn/libtorch
+LSTM/libtorch
+LSTM/build
 
 # other
 Debug/LTE-Sim

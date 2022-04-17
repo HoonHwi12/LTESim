@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/LTE-Sim.cpp 
+../src/LTE-Sim.cpp \
+../src/shared-memory.cpp 
 
 OBJS += \
-./src/LTE-Sim.o 
+./src/LTE-Sim.o \
+./src/shared-memory.o
 
 CPP_DEPS += \
-./src/LTE-Sim.d 
+./src/LTE-Sim.d \
+./src/shared-memory.d
 
 
 # Each subdirectory must supply rules for building sources it contributes

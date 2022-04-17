@@ -34,6 +34,16 @@
 #include "../../device/ENodeB.h"
 #include "../../load-parameters.h"
 
+// by HH
+#include "../../../src/shared-memory.h"
+// extern u_int64_t lstm_packet_size;
+// extern int shmid;
+// extern int SharedMemoryInit();
+// extern int SharedMemoryCreate();
+// extern int SharedMemoryRead(char *buffer);
+// extern int SharedMemoryWrite(char *buffer);
+// extern int SharedMemoryFree();
+
 Application::Application()
 {
   m_classifierParameters = NULL;
@@ -398,6 +408,8 @@ Application::Trace (Packet* p)
     	  break;
         }
     }
+
+  tti_packet_size += p->GetSize ();
 
   if (GetDestination ()->GetNodeType() == NetworkNode::TYPE_UE)
     {

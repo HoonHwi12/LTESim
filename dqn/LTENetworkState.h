@@ -9,6 +9,9 @@
 
 #include <torch/torch.h>
 
+//by HH
+#include "../src/shared-memory.cpp"
+
 typedef std::pair<int, int> id_size_pair;
 
 enum ApplicationType
@@ -188,8 +191,8 @@ class LTENetworkState{
 				noAPPs += (int)(this_UE->applications->size());
 			}
 			// form the state size
-			// 1(#ues) + Each UE's(App QoS + cqi)
-		    state_size = 1+noUEs*(3*noAPPs + cqi_size);
+			// 1(#ues) + Each UE's(App QoS + cqi) + packet
+		    state_size = 1+noUEs*(3*noAPPs + cqi_size)+1;
 		    reset_state = torch::ones({1, state_size});
 		}
 
@@ -225,7 +228,7 @@ class LTENetworkState{
 			
 			UESummary* this_UE;
 			Application* this_app;
-			float gbr_indicator, plr_indicator, delay_indicator;
+			float gbr_indicator, plr_indicator, delay_indicator, packet_indicator;
 			std::vector<int> *this_UE_cqis;
 			state = torch::ones({1, state_size});
 			using namespace torch::indexing;
@@ -233,7 +236,11 @@ class LTENetworkState{
 			state.index_put_({0,0}, noUEs); 
 			int index = 1;
 
-			//HH
+			// by HH
+			int dqn_shmid = SharedMemoryInit(DQN_KEY);;
+			char *dqn_buffer = (char*)malloc(SHARED_SIZE);
+			int shared_buffer=0;
+
 			int sum_counter=0;
 			float gbr_sum = 0;
 			float plr_sum = 0;
@@ -254,6 +261,13 @@ class LTENetworkState{
 					plr_indicator = this_app->QoSplr - this_app->realplr;
 					state.index_put_({0,index}, plr_indicator);
 					index++;
+
+					// by HH
+					SharedMemoryRead(dqn_shmid, dqn_buffer);
+					shared_buffer = atoi(dqn_buffer);
+					packet_indicator = shared_buffer;
+					state.index_put_({0,index}, packet_indicator);
+					index++;					
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
