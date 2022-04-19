@@ -12,6 +12,7 @@
 
 //by HH
 #include "../src/shared-memory.cpp"
+bool use_lstm=false;
 
 typedef std::pair<int, int> id_size_pair;
 
@@ -199,7 +200,8 @@ class LTENetworkState{
 			// form the state size
 			// 1(#ues) + Each UE's(App QoS + cqi)
 		    //state_size = 1+noUEs*(3*noAPPs + cqi_size) + packet;
-			state_size = 1+noUEs*(3*noAPPs + cqi_size) +1; //HH
+			if(use_lstm) state_size = 1+noUEs*(3*noAPPs + cqi_size) +1; //HH
+			else state_size = 1+noUEs*(3*noAPPs + cqi_size);
 		    reset_state = torch::ones({1, state_size});
 		}
 
@@ -272,12 +274,15 @@ class LTENetworkState{
 					state.index_put_({0,index}, plr_indicator);
 					index++;
 
-					// by HH
-					SharedMemoryRead(dqn_shmid, dqn_buffer);
-					shared_buffer = atoi(dqn_buffer);
-					packet_indicator = shared_buffer;
-					state.index_put_({0,index}, packet_indicator);
-					index++;	
+					// by HH, if use lstm
+					if(use_lstm)
+					{
+						SharedMemoryRead(dqn_shmid, dqn_buffer);
+						shared_buffer = atoi(dqn_buffer);
+						packet_indicator = shared_buffer;
+						state.index_put_({0,index}, packet_indicator);
+						index++;	
+					}
 
 					gbr_sum += this_app->realgbr;
 					plr_sum += this_app->realplr;
@@ -650,8 +655,6 @@ h_log("debug303\n");
 
 		std::vector<UESummary*> *UESummaries;
 	public:
-		//int noTX;
-		//int noRX;
 		float TTIcounter;
 		int noAPPs;
 		int noUEs;

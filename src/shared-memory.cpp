@@ -13,7 +13,7 @@ int SharedMemoryInit(key_t KEY_NUM)
     // request shared memory to kernel
     if((shmid = shmget((key_t)KEY_NUM, 0, 0)) == -1)
     {
-        perror("Shmid key failed");
+        //perror("Shmid key failed");
         return FAIL;
     }
     return shmid;
@@ -30,7 +30,7 @@ int SharedMemoryCreate(key_t KEY_NUM)
         shmid = shmget((key_t)KEY_NUM, SHARED_SIZE, IPC_CREAT| 0666);
         if(shmid == -1)
         {
-            perror("Shared memory resest fail");
+            //perror("Shared memory resest fail");
             return FAIL;
         }
         else
@@ -38,7 +38,7 @@ int SharedMemoryCreate(key_t KEY_NUM)
             // delete shared memory
             if(shmctl(shmid, IPC_RMID, 0) == -1) 
             {
-                perror("Shared memory delete fail");
+                //perror("Shared memory delete fail");
                 return FAIL;
             }
 
@@ -46,7 +46,7 @@ int SharedMemoryCreate(key_t KEY_NUM)
             shmid = shmget((key_t)KEY_NUM, SHARED_SIZE, IPC_CREAT| 0666);
             if(shmid == -1)
             {
-                perror("Shared memory create fail");
+                //perror("Shared memory create fail");
                 return FAIL;
             }
         }
@@ -63,7 +63,7 @@ int SharedMemoryRead(int shmid, char *buffer)
     // attach shmid
     if((shmaddr = shmat(shmid, (void *)0, 0)) == (void *)-1)
     {
-        perror("Shmat shmid failed");
+        //perror("Shmat shmid failed");
         return FAIL;
     }
     // read
@@ -72,7 +72,7 @@ int SharedMemoryRead(int shmid, char *buffer)
     // detach shmaddr
     if(shmdt(shmaddr) == -1)
     {
-        perror("Shmdt shmaddr failed");
+        //perror("Shmdt shmaddr failed");
         return FAIL;
     }
     return SUCCESS;

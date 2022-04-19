@@ -54,7 +54,6 @@ int main(int argc, char** argv){
 	int buffer_value=0;
 	int lstm_output=0;
 	int LTE_TTI;
-	SharedMemoryCreate(LSTM_KEY);
 
 	//printf("A");
 	//train set
@@ -275,49 +274,42 @@ int main(int argc, char** argv){
 
 
 
-
-//HHHHHHH
-		//torch::Tensor data_train = torch::zeros({10,20000}); // temp
-		//torch::Tensor data_test = torch::randn({1,20000}); // temp
-
 		// by HH
-		int lte_shmid = SharedMemoryInit(LTE_KEY);
-		int lstm_shmid = SharedMemoryInit(LSTM_KEY);
-		int dqn_shmid = SharedMemoryInit(DQN_KEY);
+		int lte_shmid;
+		int dqn_shmid;
+		int lstm_shmid = SharedMemoryCreate(LSTM_KEY);
 
 
-		printf("waiting for DQN\n");
-		// DQN에서 -1 보낼때까지 대기
+		printf("waiting for LTE-Sim\n");
+		// LTE-sim 에서 PID 받을때까지 대기
 		while(buffer_value != -1)
 		{     
-			if(dqn_shmid != -1)
+			lte_shmid = SharedMemoryInit(LTE_KEY);
+			if(lte_shmid != -1)
 			{
-				if( SharedMemoryRead(dqn_shmid, dqn_buffer) == -1 )
+				SharedMemoryRead(lte_shmid, lte_buffer);
+				buffer_value = atoi(lte_buffer);
+
+				// 받은 PID 전송
+				sprintf(lstm_buffer,"%d", atoi(lte_buffer));
+				if( SharedMemoryWrite(lstm_shmid, lstm_buffer) == -1 )
 				{
-					printf("Shared Memory Read Error\n");
-    				return FAIL;
+					printf("Shared Memory Write Error\n");
+					return FAIL;
 				}
-				buffer_value = atoi(dqn_buffer);
 			}
+			
 			sleep(0.0001);
 		} 
 
-
-		// LTE-Sim 에 ready 신호 전송
-      	sprintf(lstm_buffer,"%d", -1);
-		if( SharedMemoryWrite(lstm_shmid, lstm_buffer) == -1 )
-		{
-			printf("Shared Memory Write Error\n");
-    		return FAIL;
-		}
-		buffer_value = atoi(lstm_buffer);
-		//printf("Send %d to LTE-Sim\n", buffer_value);	
-		
+		// lstm memory 초기화
+		sprintf(lstm_buffer,"%d", -1);
+		SharedMemoryWrite(lstm_shmid, lstm_buffer);		
+		dqn_shmid = SharedMemoryInit(DQN_KEY);
 
 		//LSTM start
 		while(1)
 		{	
-			// data_train 자리에 LTE-sim에서 넘어온거 넣어주기
 			int index_point=9;
 			while(1)
 			{
@@ -335,7 +327,7 @@ int main(int argc, char** argv){
 					return FAIL;
 				}
 				buffer_value = atoi(lte_buffer);
-				printf("index: %d value:%d\n", LTE_TTI-index_point, buffer_value);
+				//printf("index: %d value:%d\n", LTE_TTI-index_point, buffer_value);
 
 				data_test[0][LTE_TTI-index_point] = buffer_value;
 
@@ -354,16 +346,6 @@ int main(int argc, char** argv){
 				}
 				index_point--;
 			}
-			
-
-			// for(int i =0 ; i<10 ; i++){
-			// 	data_test[0][LTE_TTI+i] = data_train[0][LTE_TTI+i];
-			// }
-			//torch::Tensor output2 = torch::zeros({10,20000}); // temp
-
-
-
-			//HHHHHHH
 			
 			clock_t lstm_start=clock();
 			// Min-Max norm
@@ -386,8 +368,6 @@ int main(int argc, char** argv){
 				std::cout << output2[0][i];
 			}
 
-
-			////
 			lstm_output = 0;
 			for(int i =LTE_TTI+10; i<LTE_TTI+20; i++){
 				lstm_output += output2[0][i].item<int>();
@@ -397,10 +377,10 @@ int main(int argc, char** argv){
 			sprintf(dqn_buffer, "%d", lstm_output);
 			if( SharedMemoryWrite(dqn_shmid, dqn_buffer) == -1)
 			{
-				printf("Shared Memory Create Error\n");
+				printf("Shared Memory write Error\n");
 				return FAIL;
 			}
-			printf("Write %s to dqn\n", dqn_buffer);
+			//printf("Write %s to dqn\n", dqn_buffer);
 			data_test = data_test.squeeze_(0);
 		}
 		

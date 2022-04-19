@@ -53,7 +53,7 @@ class Agent{
 				explore_action.index_put_({1}, 1);
 			}
 
-			printf("explore param %d %d %d %d\n", explore_action[0][0].item<int>(), explore_action[0][1].item<int>(), explore_action[0][2].item<int>(), explore_action[0][3].item<int>());
+			//printf("explore param %d %d %d %d\n", explore_action[0][0].item<int>(), explore_action[0][1].item<int>(), explore_action[0][2].item<int>(), explore_action[0][3].item<int>());
 			printf("Explore!\n");
 			start, end = std::chrono::steady_clock::now(); // time of zero is explore
 			return explore_action;
@@ -91,7 +91,7 @@ class Agent{
 				exploit_action.index_put_({1}, 0);
 			}
 
-			printf("exploit action %d %d %d %d\n", exploit_action[0][0].item<int>(), exploit_action[0][1].item<int>(), exploit_action[0][2].item<int>(), exploit_action[0][3].item<int>());
+			//printf("exploit action %d %d %d %d\n", exploit_action[0][0].item<int>(), exploit_action[0][1].item<int>(), exploit_action[0][2].item<int>(), exploit_action[0][3].item<int>());
 		
 			if(!timeLog) printf("Exploit! \n");
 			return exploit_action;

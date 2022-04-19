@@ -19,8 +19,6 @@ TORCH_MODULE(DQN); // shared ownership
 #define SCHED_FIFO "../../sched_fifo"
 #define CQI_FIFO   "../../cqi_fifo"
 
-//extern int i_replay;
-
 typedef std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor> experience;
 
 void ConnectSchedulerFifo(int *fd);
@@ -31,28 +29,30 @@ std::string FetchCQIs(int *fd);
 void FetchInitUEs(int *fd, LTENetworkState *network_state);
 LTENetworkState* initConnections(int* _sh_fd, int* _st_fd, int* _cqi_fd);
 
-//void SendScheduler(int *fd, int scheduler0, int scheduler1=0, int scheduler2=0, int scheduler3=0);
 void SendScheduler(int *fd, int scheduler0, int scheduler1=0, int scheduler2=0, int scheduler3=0);
 
 experience processSamples(std::vector<experience> _samples);
 void loadStateDict(DQN model, DQN target_model);
 
+void initWeights(torch::nn::Module& m);
 
 /* HyperParams*/
 const int BATCH_SIZE        = 32;
-int TRAIN_TTI               = 20000;//7500;
-const int TEST_TTI          = 2500;//2500;
-const int MIN_REPLAY_MEM    = 1000;//1000;
+int TRAIN_TTI               = 20000; //20000;
+const int TEST_TTI          = 20000;//2500;
+const int MIN_REPLAY_MEM    = 0;// 1000;
 const float GAMMA           = 0.999;  // discount factor for bellman equation
 const float EPS_START       = 1.0;    // greedy stuff
 const float EPS_END         = 0.01;
-const float EPS_DECAY       = 0.0001;
+const float EPS_DECAY       = 0.001;
 const int NET_UPDATE        = 10;     // how many episodes until we update the target DQN 
+
+const int TRAIN_FREQ        = 4;
+
 const int MEM_SIZE          = 50000; // replay memory size
-//const float LR              = 0.01;  // learning rate
 const float LR_START        = 0.01;
 const float LR_END          = 0.00001;
-const float LR_DECAY        = 0.0001;
+const float LR_DECAY        = 0.001;
 const float MOMENTUM        = 0.05;  // SGD MOMENTUM
  // environment concerns
 const int NUM_ACTIONS       = 6;    // number of schedulers
@@ -60,54 +60,76 @@ const int CQI_SIZE          = 25;   // number of downlink channels per eNB
 
 //Adaptive DQN
 const int ADA_ACTIONS       = 17569; // 14641 + 2928
-const int NUM_OUTPUT       = 4;    // 0~100 * 0.01
+const int NUM_OUTPUT       = 4;
 
 // training times
-//std::chrono::steady_clock::time_point start;
-//std::chrono::steady_clock::time_point end;
-//std::chrono::nanoseconds duration;
+std::chrono::steady_clock::time_point start;
+std::chrono::steady_clock::time_point end;
+std::chrono::nanoseconds duration;
 
 int main(int argc, char** argv) {
 	int constant_scheduler = 0;
-  bool use_dqn = true;
+  bool use_dqn = false;
   bool model_saved = false;
 
   printf("batch(%d)/minReplay(%d)/EPS(%0.2f~%0.2f/%0.4f)/Update(%d)\n",
     BATCH_SIZE, MIN_REPLAY_MEM, EPS_START, EPS_END, EPS_DECAY, NET_UPDATE);
   // file naming
-  std::string scheduler_string;
+  std::string scheduler_string = "dqn";
+  std::string model_number = "0";
+  bool is_load=false;
 
   // by HH test time
   clock_t test_start = clock();
+  
+	if(argc >= 2 )
+  {
+    // use fixed scheduler or dqn
+		constant_scheduler = atoi(argv[1]);
+    scheduler_string = argv[1];
+    if(constant_scheduler==7)
+    {
+      use_dqn = true;
+      scheduler_string = "dqn";
+    }
+	} 
+  if(argc >= 3)
+  {
+    if( strcmp(argv[2], "0")==0) use_lstm=false;          // default=false
+    else use_lstm=true;
+  }
+  if(argc >= 4) model_number = argv[3]; // default="0"
+  if(argc == 5)
+  {
+    if( strcmp(argv[4], "0")==0 ) is_load=false;          // default=false
+    else is_load=true;
+  }
+
+  // connect shared memory
   int dqn_shmid = SharedMemoryCreate(DQN_KEY);
+  char *dqn_buffer = (char*)malloc(SHARED_SIZE);
   if(dqn_shmid == -1)
   {
     printf("Shared Memory Create Error\n");
     return FAIL;
+   }
+
+
+  // LTE-Sim에 LSTM 사용여부 전송
+  if(use_lstm == false)
+  {    
+    sprintf(dqn_buffer,"%d", -1);
   }
-  // LSTM에 ready 신호 전송
-  char *dqn_buffer = (char*)malloc(SHARED_SIZE);
-  sprintf(dqn_buffer,"%d", -1);
+  else
+  {
+    sprintf(dqn_buffer,"%d", 0x89);
+  }
+
   if( SharedMemoryWrite(dqn_shmid, dqn_buffer) == -1)
   {
-    printf("Shared Memory Write Error\n");
-    return FAIL;
+    printf("shared memory write failed\n");
   }
 
-
-	if(argc > 1 ){
-
-    // use fixed scheduler or dqn
-		constant_scheduler = atoi(argv[1]);
-    if(constant_scheduler==7) scheduler_string = "dqn";
-    else
-    {
-      scheduler_string = argv[1];
-      use_dqn = false;
-    }
-	} else {
-    scheduler_string = "dqn";
-  }
 
   std::cout << "PYTORCH version " << TORCH_VERSION << std::endl;
 
@@ -135,68 +157,74 @@ int main(int argc, char** argv) {
 
   EpsilonGreedy* eps               = new EpsilonGreedy(EPS_START, EPS_END, EPS_DECAY);// start, end, decay
   EpsilonGreedy* lr_rate           = new EpsilonGreedy(LR_START, LR_END, LR_DECAY);
-
-  //Agent<EpsilonGreedy, DQN>* agent = new Agent<EpsilonGreedy, DQN>(eps,NUM_ACTIONS);
   
   Agent<EpsilonGreedy, DQN>* agent = new Agent<EpsilonGreedy, DQN>(eps,ADA_ACTIONS);
 
-  h_log("debug-1\n");
+  h_log("agent ready\n");
   DQN policyNet(reset_state.size(1), ADA_ACTIONS);
   DQN targetNet(reset_state.size(1), ADA_ACTIONS);
-  h_log("debug-2\n");
+  h_log("policy network ready\n");
 
   // logging files for training 
   //  ~ please make sure that test_results/ is valid folder
-  std::string log_file_name, model_name, state_name, base;
+  std::string log_file_name, model_name, base;
   base               = "test_results/" + scheduler_string + std::to_string(noUEs);
   log_file_name      = base + "_training.txt";
-  model_name         = base + "_model.pt";
-  state_name         = base + "_state.pt";
+  model_name         = base + "_" + model_number + "_model.pt";
+  h_log("File name ready\n");
 
-  h_log("debug-3\n");
+  // by HH LOAD MODEL
+  if(is_load)
+  {
+    //torch::load(policyNet, "test_results/dqn400_0_model.pt");
+    torch::load(policyNet, model_name);
+    printf("load model success, waiting for LTE-Sim\n");
+  }
+  else{
+    policyNet->apply(initWeights);
+  }
+
   // copy weights to targetnet
-  loadStateDict(policyNet, targetNet); 
+  loadStateDict(policyNet, targetNet);
+
   policyNet->to(device);
   targetNet->to(device);
-
   // setting up training variables
   std::vector<experience> samples;
-  h_log("debug101\n");
+  h_log("samples ready\n");
   torch::Tensor current_q_values, next_q_values, target_q_values;
   torch::optim::Adam optimizer(policyNet->parameters(), torch::optim::AdamOptions(LR_START));
-  h_log("debug102\n");
-
+  h_log("optimizer ready\n");
 
   // get update from first update packets
   update     = FetchState(&st_fd); 
-  h_log("debug110\n");
+  h_log("fetch state complete\n");
   cqi_update = FetchCQIs(&cqi_fd);
-  h_log("debug111\n");
+  h_log("fetch cqi complete\n");
   networkEnv->UpdateNetworkState(update); 
-  h_log("debug112\n");
+  h_log("update networkstates complete\n");
   networkEnv->ProcessCQIs(cqi_update);
-  
   // training loop variables
   int valid_TTI_explore = 0;
   int valid_TTI_exploit = 0;
   float reward_copy = 0;
   int update_counter = 0;
+  int training_freq = 0;
   bool explore = true;
 
-  h_log("debug103\n");
   if(!use_dqn)
   {
     TRAIN_TTI += TEST_TTI;
   }
   while(1){ // training loop
-    h_log("debug while(1)\n");
+    h_log("entering while(1)\n");
   	torch::Tensor state = networkEnv->CurrentState(true);
   	networkEnv->TTI_increment();
 
   	// selecting an action
     torch::Tensor action = torch::zeros({2,4});
     torch::Tensor action_input = torch::zeros(1);
-    h_log("debug200\n");
+    h_log("action ready\n");
 
     if(use_dqn){ // select action explore/exploit in dqn
       if(networkEnv->TTIcounter > TRAIN_TTI)
@@ -222,9 +250,8 @@ int main(int argc, char** argv) {
       action.index_put_({0,3}, -1);
       action.index_put_({1}, -1);
     }
-    h_log("debug104\n");
+    h_log("select action complete\n");
 
-  	//SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
     SendScheduler(&sh_fd, action[0][0].item<int>(), action[0][1].item<int>(), action[0][2].item<int>(), action[0][3].item<int>());
 
   	// observe new state
@@ -247,30 +274,34 @@ int main(int argc, char** argv) {
     {
       torch::Tensor next_state  = networkEnv->CurrentState(false);
       // store experiece in replay memory
-      exp->push(state.to(torch::kCPU), action_input.to(torch::kCPU), next_state.to(torch::kCPU), reward.to(torch::kCPU)); 
+      exp->push(state, action_input.to(torch::kCPU), next_state, reward); 
 
-      //start = std::chrono::steady_clock::now(); //training time logging
+      start = std::chrono::steady_clock::now(); //training time logging
       clock_t infstart=clock();
 
-      if( (int)networkEnv->TTIcounter %10 ==0)
+      if( !use_lstm || (int)networkEnv->TTIcounter %10 ==0)
       {
-        // if(use_dqn) // if we are using dqn
-        // { 
         // if enough samples
         if(exp->canProvideSamples((size_t)MIN_REPLAY_MEM)){ 
           update_counter++;
           // access learning rate
           auto options = static_cast<torch::optim::AdamOptions&> (optimizer.defaults());
           options.lr(lr_rate->explorationRate(networkEnv->TTIcounter - MIN_REPLAY_MEM));
-          h_log("debug1\n");
+          h_log("lr update\n");
+
           //sample random batch and process
           samples = exp->sampleMemory(BATCH_SIZE); 
           experience batch = processSamples(samples);
       
           // work out the qs
           current_q_values = agent->CurrentQ(policyNet, std::get<0>(batch), std::get<1>(batch));
-          h_log("debug2\n");
+          h_log("currenQ ready\n");
           next_q_values = (agent->NextQ(targetNet, std::get<2>(batch))).to(torch::kCPU);
+
+          torch::Tensor abs = at::abs(current_q_values);
+          torch::Tensor max_q = at::max(abs);
+          float m_q = max_q.item<float>();
+
           // bellman equation
           target_q_values = (next_q_values.multiply(GAMMA)) +  std::get<3>(batch);
           // loss and backprop
@@ -281,7 +312,7 @@ int main(int argc, char** argv) {
           optimizer.zero_grad();
           loss.backward();
           optimizer.step();
-          h_log("debug3\n");
+          h_log("optimizer step complete\n");
 
           // update targetNet with policyNey parameters
           if(update_counter > NET_UPDATE){
@@ -293,66 +324,28 @@ int main(int argc, char** argv) {
       }
 
       // training time logging
-      //end = std::chrono::steady_clock::now();
-      //duration = end - start;    
-      h_log("debug4\n");
+      end = std::chrono::steady_clock::now();
+      duration = end - start;    
+      h_log("time logging\n");
       // checks the valid-TTI's explore/exploitation count
       if (action[1][0].item<int>() == 0) valid_TTI_exploit++;
       else if(action[1][0].item<int>() > 0) valid_TTI_explore++;
-      h_log("debug5\n");
       printf("\tInferenceTime %0.7f ms\tExploit %d,\tExplore %d\n", (float)(clock()-infstart)/CLOCKS_PER_SEC, valid_TTI_exploit, valid_TTI_explore);
 
-      if( model_saved == false && (networkEnv->TTIcounter > TRAIN_TTI ))
-      {
-        model_saved = true;
-        torch::save(policyNet, model_name);
-      }
     } // training loop
     
+    if( model_saved == false && (networkEnv->TTIcounter >= TRAIN_TTI ))
+    {
+      torch::NoGradGuard no_grad;
+      model_saved = true;
+      torch::save(policyNet, model_name);
+    }
+
     if(networkEnv->TTIcounter >= (TRAIN_TTI + TEST_TTI)) break;
   }// training loop
 
   // log training loop satisfaction rates, false flag signals training
   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, false);
-
-
-  // if(use_dqn){ // only testing loops for DQN
-  //   torch::save(policyNet, model_name);
-  //   h_log("debug-10\n");
-
-  //   int training_ttis = networkEnv->TTIcounter;
-
-  //   while(1){ // testing loop
-  //     torch::Tensor state = networkEnv->CurrentState(true); 
-  //     networkEnv->TTI_increment();
-
-  //   	// select action explore/exploit
-  //     torch::Tensor action = agent->exploit(state.to(device), policyNet, true);
-
-  //     //SendScheduler(&sh_fd, action[0].item<int>(), action[1].item<int>(), action[2].item<int>(), action[3].item<int>());
-  //     SendScheduler(&sh_fd, action[0][0].item<int>(), action[0][1].item<int>(), action[0][2].item<int>(), action[0][3].item<int>());
-  //     h_log("debug-11\n");
-  //     // observe new state
-  //     update     = FetchState(&st_fd); 
-  //     cqi_update = FetchCQIs(&cqi_fd);
-  //     // check if end of simulation
-  //     if(strcmp(update.c_str(), "end") == 0){
-  //       std::cout << "END signal received!" << std::endl;
-  //       break;
-  //     }
-  //     networkEnv->UpdateNetworkState(update); // process new state
-  //     networkEnv->ProcessCQIs(cqi_update); // process cqis
-
-  //     torch::Tensor reward = networkEnv->CalculateReward(); // observe reward
-  //     reward_copy = reward[0].item<float>();
-
-  //     h_log("debug-12\n");
-  //     if(networkEnv->TTIcounter == (training_ttis + TEST_TTI)) break;
-  //   } // testing loop
-
-  //   networkEnv->log_satisfaction_rates(scheduler_string, noUEs, true);
-
-  // } // only dqn should test loop
 
   close(sh_fd);
   close(st_fd);
@@ -364,12 +357,26 @@ int main(int argc, char** argv) {
   return 0;
 }
 
+void initWeights(torch::nn::Module& m){
+  if ((typeid(m) == typeid(torch::nn::LinearImpl)) || (typeid(m) == typeid(torch::nn::Linear))) {
+    auto p = m.named_parameters(false);
+    auto w = p.find("weight");
+    auto b = p.find("bias");
+
+    if (w != nullptr) torch::nn::init::xavier_uniform_(*w);
+    if (b != nullptr) torch::nn::init::constant_(*b, 0.01);
+  }
+}
+
 void loadStateDict(DQN model, DQN target_model) {
   torch::autograd::GradMode::set_enabled(false);  // make parameters copying possible
   auto new_params = target_model->named_parameters(); // implement this
   auto params = model->named_parameters(true /*recurse*/);
   auto buffers = model->named_buffers(true /*recurse*/);
+
+//   int i=0;
   for (auto& val : new_params) {
+    //i++;
     auto name = val.key();
     auto* t = params.find(name);
     if (t != nullptr) {
@@ -380,7 +387,9 @@ void loadStateDict(DQN model, DQN target_model) {
         t->copy_(val.value());
       }
     }
+    //if(i>490000) break;
   }
+  torch::autograd::GradMode::set_enabled(true);
 }
 
 experience processSamples(std::vector<experience> _samples){
@@ -465,18 +474,13 @@ std::string FetchCQIs(int *fd){
 void FetchInitUEs(int *fd, LTENetworkState *network_state){
   // read size of UE summary
   *fd = open(STATE_FIFO, O_RDONLY);
-  h_log("debug600\n");
   std::string::size_type size;
   read(*fd, &size, sizeof(size));
-  h_log("debug601\n");
   std::string message(size, ' ');
-  h_log("debug604\n");
   // read the UE summary
   read(*fd, &message[0], size);
-  h_log("debug602\n");
   close(*fd);
   network_state->InitState(message);
-  h_log("debug603\n");
 }
 
 void SendScheduler(int *fd, int scheduler0, int scheduler1, int scheduler2, int scheduler3){
@@ -497,22 +501,17 @@ void SendScheduler(int *fd, int scheduler0, int scheduler1, int scheduler2, int 
 LTENetworkState* initConnections(int* _sh_fd, int* _st_fd, int* _cqi_fd){
 	// connect to the scheduler pipe
 	ConnectSchedulerFifo(_sh_fd);
-  printf("connect scheduler fifo\n");
 	// open CQI fifo
   
   OpenCQIFifo(_cqi_fd);
-printf("opencqi fifo\n");
   // open state fifo,connect and fetch #UEs
   int _noUEs = 0;
   OpenStateFifo(_st_fd, &_noUEs);
-  printf("openstate fifo\n");
   
   // initialise the network state environment
   LTENetworkState *networkEnv = new LTENetworkState(_noUEs, CQI_SIZE);
-  h_log("debug500\n");
   // initialise UE and Application from LTE-sim
   FetchInitUEs(_st_fd, networkEnv);
-  h_log("debug501\n");
   // print a summary
   networkEnv->print_summary();
   return networkEnv;
