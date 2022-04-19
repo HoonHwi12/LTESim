@@ -41,7 +41,7 @@ void loadStateDict(DQN model, DQN target_model);
 /* HyperParams*/
 const int BATCH_SIZE        = 32;
 int TRAIN_TTI               = 20000;//7500;
-const int TEST_TTI          = 0;//2500;
+const int TEST_TTI          = 2500;//2500;
 const int MIN_REPLAY_MEM    = 1000;//1000;
 const float GAMMA           = 0.999;  // discount factor for bellman equation
 const float EPS_START       = 1.0;    // greedy stuff

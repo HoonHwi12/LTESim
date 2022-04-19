@@ -501,7 +501,7 @@ Simulator::Run ()
     // Send packet size to LSTM every 10 TTI
     packet_index = tti_tr2 %10;
     lstm_packet_size[packet_index] = tti_packet_size;
-    if(packet_index == 9)
+    if(packet_index == 9 && tti_tr2<19999)
     {
       printf("waiting for LSTM\n");
       for(int index=0; index < 10; index++)
